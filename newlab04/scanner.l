@@ -1,3 +1,10 @@
+/*
+ * Dustin Horvath
+ * EECS 665 Lab04
+ * Lexical Scanner for C-like language
+ *
+ */
+
 %{
 #include <stdio.h>
 #include <string.h>
