@@ -80,38 +80,38 @@ WS : (' ' | '\t' | '\r' | '\n')+ { $channel=HIDDEN; };
 top : l = expr { System.out.println( $l.value ); }
   | EOF ;
 
+// Groups low-precedence addition and subtraction, else only higher priority
 expr returns [float value] : 
     LPAREN l = expr RPAREN 
       { $value = $l.value ; }
-  | l = multiplyingExpression (PLUS r = multiplyingExpression)+
+  | l = mulExpr (PLUS r = mulExpr)+
       { $value = $l.value + $r.value; }
-  | l = multiplyingExpression (MINUS r = multiplyingExpression)+
+  | l = mulExpr (MINUS r = mulExpr)+
       { $value = $l.value - $r.value; }
-  | l = multiplyingExpression
+  | l = mulExpr
       { $value = $l.value; }
    ;
 
-multiplyingExpression returns [float value] :
-    l = powExpression (TIMES r = powExpression)+
+// Groups mid-precedence mult and division, else only higher priority
+mulExpr returns [float value] :
+    l = powExpr (TIMES r = powExpr)+
       { $value = $l.value * $r.value; }
-  | l = powExpression (DIVIDE r = powExpression)+
+  | l = powExpr (DIVIDE r = powExpr)+
       { $value = $l.value / $r.value; }
-  | l = powExpression
+  | l = powExpr
       { $value = $l.value ; }
    ;
 
-powExpression returns [float value] :
-    l = atom POWER r = atom
+// Groups moderately-high precedence exponentials, else value or single fxn
+powExpr returns [float value] :
+    l = atomic POWER r = atomic
       { $value = (float)Math.pow($l.value, $r.value ) ; }
-  | l = atom
+  | l = atomic
       { $value = $l.value ; }
    ;
 
-atom returns [float value] :
-  | l = func { $value = $l.value ; }
-   ;
-
-func returns [float value] :
+// Handles atomic functions and values
+atomic returns [float value] :
     COS r = digit {$value = (float)Math.cos($r.value); }
   | TAN r = digit {$value = (float)Math.tan($r.value); }
   | SIN r = digit {$value = (float)Math.sin($r.value); }
@@ -119,6 +119,7 @@ func returns [float value] :
   | l = digit { $value = $l.value; } 
   ;
 
+// Reads all manner of input values, converts them to base 10 float
 digit returns [float value] : 
     REAL { $value = (float)Float.parseFloat( $REAL.getText() ); }
   | HEXID { 
