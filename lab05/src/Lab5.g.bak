@@ -61,8 +61,7 @@ fragment HEX: ('0' .. '9' | 'A' .. 'F' | 'a' .. 'f');
 fragment LETTER : 'a' .. 'z' | 'A' .. 'Z' ;
 OCTAL : '0'(OCT)* ;
 HEXID : '0x'(HEX)* ;
-BINARY : '0b'(BIN)* ;
-INTEGER : TENSTART(DEC)* ;
+INTEGER : DEC+ ;
 REAL : INTEGER'.'INTEGER ;
 ID : LETTER(LETTER | DEC)* ;
 
@@ -80,52 +79,33 @@ WS : (' ' | '\t' | '\r' | '\n')+ { $channel=HIDDEN; };
 top : l = expr { System.out.println( $l.value ); }
   | EOF ;
 
-expr returns [float value] : 
-    LPAREN l = expr RPAREN 
-      { $value = $l.value ; }
-  | l = multiplyingExpression (PLUS r = multiplyingExpression)+
-      { $value = $l.value + $r.value; }
-  | l = multiplyingExpression (MINUS r = multiplyingExpression)+
-      { $value = $l.value - $r.value; }
-  | l = multiplyingExpression
-      { $value = $l.value; }
-   ;
-
-multiplyingExpression returns [float value] :
-    l = powExpression (TIMES r = powExpression)+
-      { $value = $l.value * $r.value; }
-  | l = powExpression (DIVIDE r = powExpression)+
-      { $value = $l.value / $r.value; }
-  | l = atom
-      { $value = $l.value ; }
-   ;
-
-powExpression returns [float value] :
-    l = atom POWER r = atom
-      { $value = (float)Math.pow($l.value, $r.value ) ; }
-  | l = atom
-      { $value = $l.value ; }
-   ;
-
-atom returns [float value] :
-  | l = func { $value = $l.value ; }
-   ;
-
-func returns [float value] :
-    COS r = digit {$value = (float)Math.cos($r.value); }
-  | l = digit { $value = $l.value; } 
+expr returns [float value] :
+    paren {$value = $paren.value; } 
+  | simpleExpr {$value = $simpleExpr.value; } 
   ;
 
-digit returns [float value] : 
-    REAL { $value = (float)Float.parseFloat( $REAL.getText() ); }
-  | HEXID { 
-        $value = (float)Integer.parseInt( ($HEXID.getText()).substring(2), 16 ); 
-      }
-  | OCTAL { 
-        $value = (float)Integer.parseInt( ($OCTAL.getText()).substring(1), 8 ); 
-      }
-  | BINARY { 
-        $value = (float)Integer.parseInt( ($BINARY.getText()).substring(2), 2 ); 
-      }
-  | INTEGER { $value = (float)Integer.parseInt( $INTEGER.getText(), 10 ); }
-  ;
+
+paren returns [float value] : LPAREN l = simpleExpr RPAREN {
+  $value = $l.value;
+  } ;
+
+simpleExpr returns [float value] : l = term {
+  $value = $l.value;
+  } ;
+
+term returns [float value] : l = digit { $value = $l.value; } (
+    ( DIVIDE r = digit { $value /= $r.value; } )*
+  | ( TIMES r = digit { $value *= $r.value; } )*
+  | ( POWER r = digit { $value = (float)Math.pow($value, $r.value); } )*
+  | ( PLUS r = digit { $value += $r.value; } )*
+  | ( MINUS r = digit { $value -= $r.value; } )*
+  | ( SIN r = digit { $value = (float)Math.sin($r.value); } )*
+  | ( TAN r = digit { $value = (float)Math.tan($r.value); } )*
+  | ( COS r = digit { $value = (float)Math.cos($r.value); } )*
+
+  );
+
+
+digit returns [float value] : INTEGER { $value = Integer.parseInt( $INTEGER.getText(), 10 ); } ;
+
+
