@@ -7,7 +7,7 @@ compile: build
 	javac -classpath antlrworks-1.4.3.jar *.java
 
 run:
-	java -classpath .:antlrworks-1.4.3.jar Lab6Parser
+	java -classpath .:antlrworks-1.4.3.jar Lab5Parser
 
 edit:
 	java -jar antlrworks-1.4.3.jar
