@@ -96,7 +96,7 @@ multiplyingExpression returns [float value] :
       { $value = $l.value * $r.value; }
   | l = powExpression (DIVIDE r = powExpression)+
       { $value = $l.value / $r.value; }
-  | l = atom
+  | l = powExpression
       { $value = $l.value ; }
    ;
 
@@ -113,6 +113,9 @@ atom returns [float value] :
 
 func returns [float value] :
     COS r = digit {$value = (float)Math.cos($r.value); }
+  | TAN r = digit {$value = (float)Math.tan($r.value); }
+  | SIN r = digit {$value = (float)Math.sin($r.value); }
+  | LOG r = digit {$value = (float)Math.log($r.value); }
   | l = digit { $value = $l.value; } 
   ;
 
