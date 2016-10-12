@@ -42,26 +42,16 @@ vector<int> epsilonClosure(std::vector<int> states[][MAXSIZE], int row, int epsi
 vector<int> navigate(std::vector<int> states[][MAXSIZE], vector<int> tocheck, int col){
   vector<int> destinations;
   for(int vectorindex = 0; vectorindex < tocheck.size(); vectorindex++){
-    for(int i = 0; i < states[vectorindex][col].size(); i++){
-      if(!states[vectorindex][col].empty()){
-        destinations.push_back(states[vectorindex][col].at(i));
+    for(int i = 0; i < states[tocheck.at(vectorindex)][col].size(); i++){
+      if(!states[tocheck.at(vectorindex)][col].empty()){
+        destinations.push_back(states[tocheck.at(vectorindex)][col].at(i));
       }
     }
   }
   return destinations;
 }
 
-std::string printVector(vector<int> in){
-  std::string out = "{";
-  if(in.size() > 0){
-    out.append(to_string(in.at(0)));
-  }
-  for(int i = 1; i < in.size(); i++){
-    out.append(",");
-    out.append(to_string(in.at(i)));
-  }
-  out.append("}");
-}
+
 
 
 int main(){
@@ -130,6 +120,7 @@ int main(){
   }
   lastcolumn--;
 
+  /* // Print the read-in values
   for(int i = 0; i < totalstates; i++){
     for(int j = 0; j < 3; j++){
       for(int k = 0; k < NFAstates[i][j].size(); k++){
@@ -139,6 +130,7 @@ int main(){
     }
     std::cout << "\n";
   }
+  */
 
   // Get epsilon closure of start state
   int start = initialstate-1;
@@ -156,21 +148,21 @@ int main(){
 
   inQueue.push(Iclose);
   while(!inQueue.empty()){
-  //for(int x = 0; x < 3; x++){
     std::vector<int> currentVector = inQueue.front();
     inQueue.pop();
 
     bool printedMark = false;
     for(int symbol = 0; symbol < lastcolumn; symbol++){
+      // Get a new vector off the front of the queue
       std::vector<int> tempVector = navigate(NFAstates, currentVector, symbol);
+       
       // Don't print anything if there are no destinations for a symbol
-      
-      
       if(!tempVector.empty()){
         if(!printedMark){
           std::cout << "Mark " << currentstate+1 << "\n";
           printedMark = true;
         }
+        
         // Print start
         std::cout << "{";
         if(currentVector.size() > 0){
