@@ -13,6 +13,7 @@ using namespace std;
 
 #define MAXSYMBOLS 26
 #define MAXSIZE MAXSYMBOLS+1
+#define MAXDFASTATES 30
 
 
 vector<int> epsilonClosureHelper(std::vector<int> states[][MAXSIZE], int row, int epsilonCol){
@@ -217,9 +218,19 @@ int main(){
   //std::cout << printVector(Iclose) << "\n";
 
   int currentstate = 0;
+  
+  // INQUEUE: stores the list of states that still need to be described, using
+  // a BFS mannerism.
   std::queue<vector<int>> inQueue;
+  // OUTLIST: list of all the states that have been evaluated so far. This
+  // list must be consulted before pushing any new states onto inQueue, in
+  // order to ensure uniqueness
   std::vector<vector<int>> outList;
+  // DFATABLE: stores the actual, new DFA transition table in its simplified
+  // form. lastcolumn is the number of symbols.
+  int DFAtable[MAXDFASTATES][lastcolumn];
 
+  // Holds the list of new final states for the DFA
   std::vector<int> newFinals;
 
   // Push it onto our working queue
@@ -280,10 +291,17 @@ int main(){
           for(int i = 1; i < tempVector.size(); i++){
             std::cout << "," << tempVector.at(i)+1;
           }
-          std::cout << "} = " << getMark(outList, tempVector)+1 << "\n";
+          int mark = getMark(outList, tempVector)+1;
+          std::cout << "} = " << mark << "\n";
+
+          DFAtable[currentstate][symbol] = mark;
 
 
         }
+      }
+      else{
+          DFAtable[currentstate][symbol] = 0;
+
       }
 
     }
@@ -322,6 +340,16 @@ int main(){
 
   for(int row = 0; row < outList.size(); row++){
     std::cout << std::setw(width) << left << row+1;
+    for(int column = 0; column < lastcolumn; column++){
+      if(DFAtable[row][column] != 0){
+        std::stringstream concat;
+        concat << "{" << DFAtable[row][column] << "}";
+        std::cout << std::setw(width) << left << concat.str();
+      }
+      else{
+        std::cout << std::setw(width) << left << "{}";
+      }
+    }
 
 
     std::cout << "\n";
