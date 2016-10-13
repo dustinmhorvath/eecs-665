@@ -247,7 +247,7 @@ int main(){
               for(int i = 1; i < tempVector.size(); i++){
                 std::cout << "," << tempVector.at(i)+1;
               }
-              std::cout << "} = " << getMark(outList, currentVector)+1 << "\n";
+              std::cout << "} = " << getMark(outList, tempVector)+1 << "\n";
 
               
             }
