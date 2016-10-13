@@ -1,3 +1,17 @@
+/*
+ * Dustin Horvath
+ * nfa2dfa
+ *
+ * EECS 665 Compilers
+ * Project 1
+ *
+ * Takes an nfa table as input and produces a simplified dfa rule list and
+ * state table as output. See file 'input.txt' for an example input format.
+ 
+ *
+ */
+
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -30,6 +44,9 @@ vector<int> epsilonClosureHelper(std::vector<int> states[][MAXSIZE], int row, in
   return closure;
 }
 
+// Takes an NFA table, start state, and last column, and returns the epsilon
+// closure of that particular pseudo-state. Uses episolonClosureHelper for
+// recursive calls
 vector<int> epsilonClosure(std::vector<int> states[][MAXSIZE], vector<int> tocheck, int epsilonCol){
   vector<int> closure = tocheck;
   for(int vectorindex = 0; vectorindex < tocheck.size(); vectorindex++){
@@ -46,6 +63,8 @@ vector<int> epsilonClosure(std::vector<int> states[][MAXSIZE], vector<int> toche
   return closure;
 }
 
+// Returns a list of possible output states for a particular input state,
+// given a symbol on which to move.
 vector<int> navigate(std::vector<int> states[][MAXSIZE], vector<int> tocheck, int col){
   vector<int> destinations;
   for(int vectorindex = 0; vectorindex < tocheck.size(); vectorindex++){
@@ -60,6 +79,8 @@ vector<int> navigate(std::vector<int> states[][MAXSIZE], vector<int> tocheck, in
   return destinations;
 }
 
+// Returns true if two vectors are equivalent. Does not check for
+// combinations, so take care to sort first.
 bool compareIntVector(vector<int> a, vector<int> b){
   bool equals = true;
   if(a.size() != b.size()){
@@ -76,6 +97,7 @@ bool compareIntVector(vector<int> a, vector<int> b){
   return equals;
 }
 
+// Returns true if a particular vector is in an array of vectors.
 bool checkVectorArray(std::vector<vector<int>> q, std::vector<int> v){
   for(int i = 0; i < q.size(); i++){
     if(compareIntVector(q.at(i), v)){
@@ -88,6 +110,7 @@ bool checkVectorArray(std::vector<vector<int>> q, std::vector<int> v){
 
 }
 
+// Returns the index of a particular vector in a list of vectors.
 int getMark(std::vector<vector<int>> q, std::vector<int> v){
   for(int i = 0; i < q.size(); i++){
     if(compareIntVector(q.at(i), v)){
@@ -99,6 +122,7 @@ int getMark(std::vector<vector<int>> q, std::vector<int> v){
 
 }
 
+// Returns true if a particular value is in a vector<int>
 bool contains(vector<int> v, int state){
   for(int i = 0; i < v.size(); i++){
     if(v.at(i) == state){
@@ -108,6 +132,7 @@ bool contains(vector<int> v, int state){
   return false;
 }
 
+// Returns true if ANY value in a vector is in another vector.
 bool checkVectorElementInVector(vector<int> container, vector<int> in){
   for(int i = 0; i < in.size(); i++){
     if(contains(container, in.at(i))){
@@ -117,9 +142,13 @@ bool checkVectorElementInVector(vector<int> container, vector<int> in){
   return false;
 }
 
-int main(){
+int main( int argc, char *argv[] ){
+  if(argc<2){
+    std::cout << "Please provide an input file via the command line.\nExample: \"./nfa2dfa input.txt\"\n";
+    exit(0);
+  }
 
-  std::ifstream infile("input.txt");
+  std::ifstream infile(argv[1]);
   std::string line;
 
   // Read in initial state
@@ -155,7 +184,6 @@ int main(){
 
   // Assuming we don't use more than the alphabet's worth of states, plus E
   std::vector<int> NFAstates[totalstates][MAXSIZE];
-  std::vector<int> DFAstates[totalstates][MAXSIZE];
 
   // Parse table of inputs, tokenize on whitespace with stringstream
   std::string word;
@@ -193,9 +221,10 @@ int main(){
 
     row++;   
   }
+  // Needs decremented, because it gets incremented one extra time.
   lastcolumn--;
 
-  /* // Print the read-in values
+  /* // Print the read-in values for testing
      for(int i = 0; i < totalstates; i++){
      for(int j = 0; j < 3; j++){
      for(int k = 0; k < NFAstates[i][j].size(); k++){
@@ -215,7 +244,6 @@ int main(){
     std::cout << "," << Iclose.at(i)+1;
   }
   std::cout << "} = 1\n";
-  //std::cout << printVector(Iclose) << "\n";
 
   int currentstate = 0;
   
@@ -233,17 +261,17 @@ int main(){
   // Holds the list of new final states for the DFA
   std::vector<int> newFinals;
 
-  // Push it onto our working queue
+  // Push initial closure onto our working queue
   inQueue.push(Iclose);
   outList.push_back(Iclose);
 
-
   while(!inQueue.empty()){
+    // Pull a new working vector off the queue
     std::vector<int> currentVector = inQueue.front();
-    //outList.push_back(currentVector);
     inQueue.pop();
 
     bool printedMark = false;
+    // Perform this block for every possible input symbol
     for(int symbol = 0; symbol < lastcolumn; symbol++){
       // Check where we can go from currentVector on 'symbol'
       std::vector<int> tempVector = navigate(NFAstates, currentVector, symbol);
@@ -300,20 +328,17 @@ int main(){
         }
       }
       else{
-          DFAtable[currentstate][symbol] = 0;
-
+        // Use zero so we don't have null values in table
+        DFAtable[currentstate][symbol] = 0;
       }
 
     }
 
-    // Check if our current state is a final state
+    // Check if our current state contains a final state
     std::cout << "\n";
     if(checkVectorElementInVector(finalstates, currentVector)){
       newFinals.push_back(getMark(outList, currentVector));
     }
-
-
-
 
     currentstate++;
   }
@@ -338,8 +363,10 @@ int main(){
   }
   std::cout << "\n";
 
+  // Print the block table
   for(int row = 0; row < outList.size(); row++){
     std::cout << std::setw(width) << left << row+1;
+
     for(int column = 0; column < lastcolumn; column++){
       if(DFAtable[row][column] != 0){
         std::stringstream concat;
@@ -355,9 +382,5 @@ int main(){
     std::cout << "\n";
   }
 
-
-
-
   std::cout << "\n";
-
 }
