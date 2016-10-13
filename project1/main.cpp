@@ -58,7 +58,44 @@ vector<int> navigate(std::vector<int> states[][MAXSIZE], vector<int> tocheck, in
   return destinations;
 }
 
+bool compareIntVector(vector<int> a, vector<int> b){
+  bool equals = true;
+  if(a.size() != b.size()){
+    return false;
+  }
+  else{
+    for(int i = 0; i < a.size(); i++){
+      if(a.at(i) != b.at(i)){
+        equals = false;
+      }
+    }
+  }
+  
+  return equals;
+}
 
+bool checkVectorArray(std::vector<vector<int>> q, std::vector<int> v){
+  for(int i = 0; i < q.size(); i++){
+    if(compareIntVector(q.at(i), v)){
+      return true;
+    }
+
+  }
+  return false;
+
+
+}
+
+int getMark(std::vector<vector<int>> q, std::vector<int> v){
+  for(int i = 0; i < q.size(); i++){
+    if(compareIntVector(q.at(i), v)){
+      return i;
+    }
+
+  }
+  return -1;
+
+}
 
 
 int main(){
@@ -142,7 +179,7 @@ int main(){
   // Get epsilon closure of start state
   vector<int> start = {initialstate-1};
   vector<int> Iclose = epsilonClosure(NFAstates, start, lastcolumn);
-  std::cout << "E-Closure(I0) = {" << initialstate+1;
+  std::cout << "\nE-Closure(I0) = {" << initialstate;
   for(int i = 1; i < Iclose.size(); i++){
     std::cout << "," << Iclose.at(i)+1;
   }
@@ -153,70 +190,76 @@ int main(){
   std::queue<vector<int>> inQueue;
   std::vector<vector<int>> outList;
 
+  // Push it onto our working queue
   inQueue.push(Iclose);
+  outList.push_back(Iclose);
+
+
   while(!inQueue.empty()){
-  //for(int x = 0; x < 10; x++){
     std::vector<int> currentVector = inQueue.front();
+    //outList.push_back(currentVector);
     inQueue.pop();
 
-    bool printedMark = false;
-    for(int symbol = 0; symbol < lastcolumn; symbol++){
-      // Get a new vector off the front of the queue
-      std::vector<int> tempVector = navigate(NFAstates, currentVector, symbol);
-       
-      // Don't print anything if there are no destinations for a symbol
-      if(!tempVector.empty()){
-        if(!printedMark){
-          std::cout << "\nMark " << currentstate+1 << "\n";
-          printedMark = true;
-        }
-        
-        // Print start
-        std::cout << "{";
-        if(currentVector.size() > 0){
-          std::cout << currentVector.at(0)+1;
-        }
-        for(int i = 1; i < currentVector.size(); i++){
-          std::cout << "," << currentVector.at(i)+1;
-        }
-        std::cout << "} --" << (char)((int)'a'+symbol) << "--> {";
+      bool printedMark = false;
+      for(int symbol = 0; symbol < lastcolumn; symbol++){
+        // Check where we can go from currentVector on 'symbol'
+        std::vector<int> tempVector = navigate(NFAstates, currentVector, symbol);
 
-        // Print possible terminals on symbol
-        std::cout << tempVector.at(0)+1;
-        for(int i = 1; i < tempVector.size(); i++){
-          std::cout << "," << tempVector.at(i)+1;
-        }
-        std::cout << "}\n";
-
-        // Push the new state onto the queue
-        inQueue.push(tempVector);
-
-
-        std::cout << "E-closure{";
-        std::cout << tempVector.at(0)+1;
-        for(int i = 1; i < tempVector.size(); i++){
-          std::cout << "," << tempVector.at(i)+1;
-        }
-        std::cout << "} = {";
-        tempVector = epsilonClosure(NFAstates, tempVector, lastcolumn);
+        // Don't print anything if there are no destinations for a symbol
         if(!tempVector.empty()){
-          std::cout << tempVector.at(0)+1;
-          for(int i = 1; i < tempVector.size(); i++){
+
+            if(!printedMark){
+            std::cout << "\nMark " << currentstate+1 << "\n";
+            printedMark = true;
+            }
+
+            // Print start
+            std::cout << "{";
+            if(currentVector.size() > 0){
+            std::cout << currentVector.at(0)+1;
+            }
+            for(int i = 1; i < currentVector.size(); i++){
+            std::cout << "," << currentVector.at(i)+1;
+            }
+            std::cout << "} --" << (char)((int)'a'+symbol) << "--> {";
+
+            // Print possible terminals on symbol
+            std::cout << tempVector.at(0)+1;
+            for(int i = 1; i < tempVector.size(); i++){
             std::cout << "," << tempVector.at(i)+1;
-          }
-          std::cout << "} = " << currentstate+symbol+2 << "\n";
+            }
+            std::cout << "}\n";
 
-          if(currentstate > 0){
-            inQueue.push(tempVector);
-          }
+            std::cout << "E-closure{";
+            std::cout << tempVector.at(0)+1;
+            for(int i = 1; i < tempVector.size(); i++){
+              std::cout << "," << tempVector.at(i)+1;
+            }
+            std::cout << "} = {";
+            tempVector = epsilonClosure(NFAstates, tempVector, lastcolumn);
+            if(!tempVector.empty()){
+              // Push the new state onto the queue if we haven't been there already
+              if(!checkVectorArray( outList, tempVector )){
+                inQueue.push(tempVector);
+                outList.push_back(tempVector);
+              }
+              std::cout << tempVector.at(0)+1;
+              for(int i = 1; i < tempVector.size(); i++){
+                std::cout << "," << tempVector.at(i)+1;
+              }
+              std::cout << "} = " << getMark(outList, currentVector)+1 << "\n";
+
+              
+            }
         }
-
-
-
-
-
-      }
+      
     }
+
+
+
+
+
+    
 
 
 
@@ -232,7 +275,7 @@ int main(){
 
 
 
-
+  std::cout << "\n";
 
 
 
