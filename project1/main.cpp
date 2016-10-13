@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include <stack>
+#include <iomanip>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ vector<int> epsilonClosureHelper(std::vector<int> states[][MAXSIZE], int row, in
       closure.insert(closure.end(), recurseClose.begin(), recurseClose.end());
     }
   }
-  
+
   std::sort(closure.begin(), closure.end());
   return closure;
 }
@@ -70,7 +71,7 @@ bool compareIntVector(vector<int> a, vector<int> b){
       }
     }
   }
-  
+
   return equals;
 }
 
@@ -97,6 +98,23 @@ int getMark(std::vector<vector<int>> q, std::vector<int> v){
 
 }
 
+bool contains(vector<int> v, int state){
+  for(int i = 0; i < v.size(); i++){
+    if(v.at(i) == state){
+      return true;
+    }
+  }
+  return false;
+}
+
+bool checkVectorElementInVector(vector<int> container, vector<int> in){
+  for(int i = 0; i < in.size(); i++){
+    if(contains(container, in.at(i))){
+      return true;
+    }
+  }
+  return false;
+}
 
 int main(){
 
@@ -118,8 +136,8 @@ int main(){
   std::stringstream commaparse(tempString);
   int finalstate;
   while(commaparse >> finalstate){
-    finalstates.push_back(finalstate);
-    
+    finalstates.push_back(finalstate-1);
+
     if (commaparse.peek() == ','){
       commaparse.ignore();
     }
@@ -138,7 +156,7 @@ int main(){
   std::vector<int> NFAstates[totalstates][MAXSIZE];
   std::vector<int> DFAstates[totalstates][MAXSIZE];
 
-  // Parse table of inputs
+  // Parse table of inputs, tokenize on whitespace with stringstream
   std::string word;
   int row = 0;
   int lastcolumn = 0;
@@ -147,9 +165,10 @@ int main(){
     // Consume row number
     ss >> word;
 
-    // Tokenize states
+    // Tokenize states by parsing between commas
     int column = 0;
     while(ss >> word){
+      // Discard everything outside curly braces
       first = word.find('{');
       last = word.find('}');
       std::string nocurlies = word.substr(first + 1, last-first-1);
@@ -163,29 +182,29 @@ int main(){
         if (commaparse.peek() == ',')
           commaparse.ignore();
       }
-     
+
 
       column++;
     }
     if(column > lastcolumn){
       lastcolumn = column;
     }
-    
+
     row++;   
   }
   lastcolumn--;
 
   /* // Print the read-in values
-  for(int i = 0; i < totalstates; i++){
-    for(int j = 0; j < 3; j++){
-      for(int k = 0; k < NFAstates[i][j].size(); k++){
-        std::cout << NFAstates[i][j].at(k) << " ";
-      }
-      std::cout << "    ";
-    }
-    std::cout << "\n";
-  }
-  */
+     for(int i = 0; i < totalstates; i++){
+     for(int j = 0; j < 3; j++){
+     for(int k = 0; k < NFAstates[i][j].size(); k++){
+     std::cout << NFAstates[i][j].at(k) << " ";
+     }
+     std::cout << "    ";
+     }
+     std::cout << "\n";
+     }
+     */
 
   // Get epsilon closure of start state
   vector<int> start = {initialstate-1};
@@ -201,6 +220,8 @@ int main(){
   std::queue<vector<int>> inQueue;
   std::vector<vector<int>> outList;
 
+  std::vector<int> newFinals;
+
   // Push it onto our working queue
   inQueue.push(Iclose);
   outList.push_back(Iclose);
@@ -211,73 +232,104 @@ int main(){
     //outList.push_back(currentVector);
     inQueue.pop();
 
-      bool printedMark = false;
-      for(int symbol = 0; symbol < lastcolumn; symbol++){
-        // Check where we can go from currentVector on 'symbol'
-        std::vector<int> tempVector = navigate(NFAstates, currentVector, symbol);
+    bool printedMark = false;
+    for(int symbol = 0; symbol < lastcolumn; symbol++){
+      // Check where we can go from currentVector on 'symbol'
+      std::vector<int> tempVector = navigate(NFAstates, currentVector, symbol);
 
-        // Don't print anything if there are no destinations for a symbol
-        if(!tempVector.empty()){
+      // Don't print anything if there are no destinations for a symbol
+      if(!tempVector.empty()){
 
-            if(!printedMark){
-            std::cout << "\nMark " << currentstate+1 << "\n";
-            printedMark = true;
-            }
-
-            // Print start
-            std::cout << "{";
-            if(currentVector.size() > 0){
-            std::cout << currentVector.at(0)+1;
-            }
-            for(int i = 1; i < currentVector.size(); i++){
-            std::cout << "," << currentVector.at(i)+1;
-            }
-            std::cout << "} --" << (char)((int)'a'+symbol) << "--> {";
-
-            // Print possible terminals on symbol
-            std::cout << tempVector.at(0)+1;
-            for(int i = 1; i < tempVector.size(); i++){
-            std::cout << "," << tempVector.at(i)+1;
-            }
-            std::cout << "}\n";
-
-            std::cout << "E-closure{";
-            std::cout << tempVector.at(0)+1;
-            for(int i = 1; i < tempVector.size(); i++){
-              std::cout << "," << tempVector.at(i)+1;
-            }
-            std::cout << "} = {";
-            tempVector = epsilonClosure(NFAstates, tempVector, lastcolumn);
-            if(!tempVector.empty()){
-              // Push the new state onto the queue if we haven't been there already
-              if(!checkVectorArray( outList, tempVector )){
-                inQueue.push(tempVector);
-                outList.push_back(tempVector);
-              }
-              std::cout << tempVector.at(0)+1;
-              for(int i = 1; i < tempVector.size(); i++){
-                std::cout << "," << tempVector.at(i)+1;
-              }
-              std::cout << "} = " << getMark(outList, tempVector)+1 << "\n";
-
-              
-            }
+        if(!printedMark){
+          std::cout << "\nMark " << currentstate+1 << "\n";
+          printedMark = true;
         }
-      
+
+        // Print start
+        std::cout << "{";
+        if(currentVector.size() > 0){
+          std::cout << currentVector.at(0)+1;
+        }
+        for(int i = 1; i < currentVector.size(); i++){
+          std::cout << "," << currentVector.at(i)+1;
+        }
+        std::cout << "} --" << (char)((int)'a'+symbol) << "--> {";
+
+
+        // Print possible terminals on symbol
+        std::cout << tempVector.at(0)+1;
+        for(int i = 1; i < tempVector.size(); i++){
+          std::cout << "," << tempVector.at(i)+1;
+        }
+        std::cout << "}\n";
+
+        std::cout << "E-closure{";
+        std::cout << tempVector.at(0)+1;
+        for(int i = 1; i < tempVector.size(); i++){
+          std::cout << "," << tempVector.at(i)+1;
+        }
+        std::cout << "} = {";
+        tempVector = epsilonClosure(NFAstates, tempVector, lastcolumn);
+        if(!tempVector.empty()){
+          // Push the new state onto the queue if we haven't been there already
+          if(!checkVectorArray( outList, tempVector )){
+            inQueue.push(tempVector);
+            outList.push_back(tempVector);
+          }
+          std::cout << tempVector.at(0)+1;
+          for(int i = 1; i < tempVector.size(); i++){
+            std::cout << "," << tempVector.at(i)+1;
+          }
+          std::cout << "} = " << getMark(outList, tempVector)+1 << "\n";
+
+
+        }
+      }
+
     }
+
+    // Check if our current state is a final state
+    std::cout << "\n";
+    if(checkVectorElementInVector(finalstates, currentVector)){
+      newFinals.push_back(getMark(outList, currentVector));
+    }
+
+
 
 
     currentstate++;
   }
 
+  if(newFinals.empty()){
+    newFinals.push_back(0);
+  }
+
+  // Print nice table at end
   std::cout << "\nInitial State: {" << initialstate << "}\n";
-  std::cout << "Final States: {" << finalstates.at(0);
-  for(int i = 1; i < finalstates.size(); i++){
-    std::cout << "," << finalstates.at(i)+1;
+  std::cout << "Final States: {" << newFinals.at(0)+1;
+  for(int i = 1; i < newFinals.size(); i++){
+    std::cout << "," << newFinals.at(i)+1;
   }
   std::cout << "}\n";
 
+  // Print column headers
+  int width = 8;
+  std::cout << std::setw(width) << left << "State";
+  for(int i = 0; i < lastcolumn; i++){
+    std::cout << std::setw(width) << left << (char)((int)'a' + i);
+  }
+  std::cout << "\n";
+
+  for(int row = 0; row < outList.size(); row++){
+    std::cout << std::setw(width) << left << row+1;
 
 
+    std::cout << "\n";
+  }
+
+
+
+
+  std::cout << "\n";
 
 }
