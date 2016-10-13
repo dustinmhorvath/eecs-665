@@ -110,10 +110,21 @@ int main(){
   int initialstate = std::stoi(line.substr(first + 1, last-first - 1));
 
   // Read in final states
+  std::vector<int> finalstates;
   std::getline(infile, line);
   first = line.find('{');
   last = line.find('}');
-  int finalstates = std::stoi(line.substr(first + 1, last-first-1));
+  std::string tempString = line.substr(first + 1, last-first-1);
+  std::stringstream commaparse(tempString);
+  int finalstate;
+  while(commaparse >> finalstate){
+    finalstates.push_back(finalstate);
+    
+    if (commaparse.peek() == ','){
+      commaparse.ignore();
+    }
+  }
+
 
   // Read in total states
   std::getline(infile, line);
@@ -256,26 +267,15 @@ int main(){
     }
 
 
-
-
-
-    
-
-
-
-
-
-
-    
-
-
-
     currentstate++;
   }
 
-
-
-  std::cout << "\n";
+  std::cout << "\nInitial State: {" << initialstate << "}\n";
+  std::cout << "Final States: {" << finalstates.at(0);
+  for(int i = 1; i < finalstates.size(); i++){
+    std::cout << "," << finalstates.at(i)+1;
+  }
+  std::cout << "}\n";
 
 
 
