@@ -114,9 +114,7 @@ SETRSH  ">>="
 BEGIN COMMENT;
 }
 
-"/*" {
-  BEGIN BLOCKCOMMENT;
-}
+
 
 <COMMENT>[\n](\r)? {
 /****************************************
@@ -134,14 +132,10 @@ BEGIN 0;
 ****************************************/
 }
 
+"/*"                        { BEGIN BLOCKCOMMENT; }
+<BLOCKCOMMENT>"*/"               { BEGIN 0; }
+<BLOCKCOMMENT>([\n](\r)?)|.      { /* ignored */ } 
 
-
-<BLOCKCOMMENT>"*/" {
-  BEGIN 0;
-}
-
-<BLOCKCOMMENT>[.\n\r \t] {
-}
 
 <COMMENT>. {
 }
