@@ -7,7 +7,7 @@
  *
  * Takes an nfa table as input and produces a simplified dfa rule list and
  * state table as output. See file 'input.txt' for an example input format.
- 
+
  *
  */
 
@@ -246,7 +246,7 @@ int main( int argc, char *argv[] ){
   std::cout << "} = 1\n";
 
   int currentstate = 0;
-  
+
   // INQUEUE: stores the list of states that still need to be described, using
   // a BFS mannerism.
   std::queue<vector<int>> inQueue;
