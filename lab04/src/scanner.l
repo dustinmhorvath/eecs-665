@@ -267,127 +267,127 @@ return SEMICOLON;
 
 
 {SETLSH} {
-printf("SETLSH\n", yytext);
+printf("SETLSH\n");
 return SETLSH;
 }
 {SETRSH} {
-printf("SETRSH\n", yytext);
+printf("SETRSH\n");
 return SETRSH;
 }
 {LSH} {
-printf("LSH\n", yytext);
+printf("LSH\n");
 return LSH;
 }
 {RSH} {
-printf("RSH\n", yytext);
+printf("RSH\n");
 return RSH;
 }
 {EQ} {
-printf("EQ\n", yytext);
+printf("EQ\n");
 return EQ;
 }
 {NE} {
-printf("NE\n", yytext);
+printf("NE\n");
 return NE;
 }
 {GE} {
-printf("GE\n", yytext);
+printf("GE\n");
 return GE;
 }
 {LE} {
-printf("LE\n", yytext);
+printf("LE\n");
 return LE;
 }
 {OR} {
-printf("OR\n", yytext);
+printf("OR\n");
 return OR;
 }
 {AND} {
-printf("AND\n", yytext);
+printf("AND\n");
 return AND;
 }
 {SETADD} {
-printf("SETADD\n", yytext);
+printf("SETADD\n");
 return SETADD;
 }
 {SETSUB} {
-printf("SETSUB\n", yytext);
+printf("SETSUB\n");
 return SETSUB;
 }
 {SETMUL} {
-printf("SETMUL\n", yytext);
+printf("SETMUL\n");
 return SETMUL;
 }
 {SETDIV} {
-printf("SETDIV\n", yytext);
+printf("SETDIV\n");
 return SETDIV;
 }
 {SETMOD} {
-printf("SETMOD\n", yytext);
+printf("SETMOD\n");
 return SETMOD;
 }
 {SETOR} {
-printf("SETOR\n", yytext);
+printf("SETOR\n");
 return SETOR;
 }
 {SETAND} {
-printf("SETAND\n", yytext);
+printf("SETAND\n");
 return SETAND;
 }
 {SETXOR} {
-printf("SETXOR\n", yytext);
+printf("SETXOR\n");
 return SETXOR;
 }
 {SET} {
-printf("SET\n", yytext);
+printf("SET\n");
 return SET;
 }
 {GT} {
-printf("GT\n", yytext);
+printf("GT\n");
 return GT;
 }
 {LT} {
-printf("LT\n", yytext);
+printf("LT\n");
 return LT;
 }
 {ADD} {
-printf("ADD\n", yytext);
+printf("ADD\n");
 return ADD;
 }
 {SUB} {
-printf("SUB\n", yytext);
+printf("SUB\n");
 return SUB;
 }
 {MUL} {
-printf("MUL\n", yytext);
+printf("MUL\n");
 return MUL;
 }
 {DIV} {
-printf("DIV\n", yytext);
+printf("DIV\n");
 return DIV;
 }
 {MOD} {
-printf("MOD\n", yytext);
+printf("MOD\n");
 return MOD;
 }
 {BITOR} {
-printf("BITOR\n", yytext);
+printf("BITOR\n");
 return BITOR;
 }
 {BITAND} {
-printf("BITAND\n", yytext);
+printf("BITAND\n");
 return BITAND;
 }
 {BITXOR} {
-printf("BITXOR\n", yytext);
+printf("BITXOR\n");
 return BITXOR;
 }
 {NOT} {
-printf("NOT\n", yytext);
+printf("NOT\n");
 return NOT;
 }
 {COM} {
-printf("COM\n", yytext);
+printf("COM\n");
 return COM;
 }
 
