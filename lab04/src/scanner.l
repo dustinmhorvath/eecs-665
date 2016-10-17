@@ -103,7 +103,7 @@ SETXOR  "^="
 SETLSH  "<<="
 SETRSH  ">>="
 
-%x COMMENT
+%x COMMENT BLOCKCOMMENT
 
 %%
 "//" {
@@ -112,6 +112,10 @@ SETRSH  ">>="
 * C code
 ******************************************/
 BEGIN COMMENT;
+}
+
+"/*" {
+  BEGIN BLOCKCOMMENT;
 }
 
 <COMMENT>[\n](\r)? {
@@ -131,6 +135,13 @@ BEGIN 0;
 }
 
 
+
+<BLOCKCOMMENT>"*/" {
+  BEGIN 0;
+}
+
+<BLOCKCOMMENT>[.\n\r \t] {
+}
 
 <COMMENT>. {
 }
