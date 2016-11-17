@@ -5,593 +5,401 @@
  *
  */
 
+
 %{
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "vars.h"
+#include <fcg.yacc.h>
 
 
-//Define the tokens that you want to return from your lex as follows
-/*
-#define ID 256
-#define INTVAL 257
-#define PREPROC 258
-#define PUNC 259
-#define PRIM 260
-*/
+
+#ifndef NDEBUG
+#    define DEBUGF(...) printf(__VA_ARGS__)
+#else
+#    define DEBUGF(...)
+#endif
+
+
 
 int list_type;
 %}
 
-%option noyywrap nounput yylineno
-ID [a-zA-Z][a-zA-Z0-9_]*
-LPAREN "("
-RPAREN ")"
-LCBRACKET "{"
-RCBRACKET "}"
-LBRACKET "["
-RBRACKET "]"
-COMMA ","
-SEMICOLON ";"
-INTVAL [0-9]+
-DBLVAL [0-9]+"."[0-9]+
-FLTVAL [0-9]+"."[0-9]+"f"
-CHARVAL "\'"[^\']*"\'"
-STRVAL "\""[^\"]*"\""
-PREPROC ^#.*
-WHITE [ \n\t\r]+
-VOID  "void"  
-CHAR  "char"
-SHORT "short" 
-INT "int"
-LONG  "long"  
-FLOAT "float"
-DOUBLE  "double"
-RETURN  "return" 
-DO  "do"
-WHILE "while" 
-FOR "for"
-SWITCH  "switch"
-CASE  "case"
-DEFAULT "default"
-IF  "if"
-ELSE  "else"  
-CONTINUE  "continue"
-BREAK "break"
-GOTO  "goto"
-UNSIGNED  "unsigned"
-TYPEDEF "typedef"
-STRUCT  "struct"
-UNION "union"
-CONST "const"
-STATIC  "static"
-EXTERN  "extern" 
-AUTO  "auto"
-REGISTER  "register"
-SIZEOF  "sizeof"
-EQ  "=="
-NE  "!=" 
-GE  ">="
-LE  "<="  
-GT  ">"
-LT  "<"
-ADD "+"
-SUB "-"
-MUL "*"
-DIV "/" 
-MOD "%" 
-OR  "\|\|"
-AND "\&\&"  
-BITOR "|" 
-BITAND  "&"
-BITXOR  "^" 
-NOT "!" 
-COM "~"
-LSH "<<"  
-RSH ">>"  
-SET "="
-SETADD  "+="  
-SETSUB  "-="  
-SETMUL  "*="
-SETDIV  "/="  
-SETMOD  "%="  
-SETOR "|="
-SETAND  "&="  
-SETXOR  "^="  
-SETLSH  "<<="
-SETRSH  ">>="
+%option       noyywrap nounput yylineno
+%x            COMMENT
 
-%x COMMENT BLOCKCOMMENT
+ID         [a-zA-Z][a-zA-Z0-9_]*
+whitesp       [ \t\n\r]
+nonwhitesp    [^ \t\n\r]
+INTVAL         [0-9]
+HEXVAL      [0-9a-fA-F]
+OCTVAL      [0-7]
 
 %%
-"//" {
-/****************************************
-* Matching with Single line comments in our 
-* C code
-******************************************/
-BEGIN COMMENT;
-}
-
-
-<COMMENT>[\n](\r)? {
-/****************************************
-* A new line indicates end of a single 
-* line comment in C
-****************************************/
-
-BEGIN 0;
-}
-
-<COMMENT>[ \t] {
-/****************************************
-* Lexer ignores the comments section
-* by Ignoring anything inside a comment
-****************************************/
-}
-
-"/*"                        { BEGIN BLOCKCOMMENT; }
-<BLOCKCOMMENT>"*/"               { BEGIN 0; }
-<BLOCKCOMMENT>([\n](\r)?)|.      { /* ignored */ } 
 
 
 
-<COMMENT>. {
+"unsigned" {
+  DEBUGF( "UNSIGNED\n" );
+  return UNSIGNED;
 }
 
-
-
-{STRVAL} {
-printf("STRVAL\n");
-return STRVAL;
-}
-{CHARVAL} {
-printf("CHARVAL\n");
-return CHARVAL;
-}
-{INTVAL} {
-printf("INTVAL\n");
-return INTVAL;
-}
-{DBLVAL} {
-printf("DBLVAL\n");
-return DBLVAL;
-}
-{FLTVAL} {
-printf("FLTVAL\n");
-return FLTVAL;
+"typedef" {
+  DEBUGF( "TYPEDEF\n" );
+  return TYPEDEF;
 }
 
-
-{PREPROC} {
-printf("PREPROC\n");
-return PREPROC;
+"struct" {
+  DEBUGF( "STRUCT\n" );
+  return STRUCT;
 }
 
+"union" {
+  DEBUGF( "UNION\n" );
+  return UNION;
+}
 
+"const" {
+  DEBUGF( "CONST\n" );
+  return CONST;
+}
 
-{VOID} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
+"static" {
+  DEBUGF( "STATIC\n" );
+  return STATIC;
 }
-printf("%s\n", yytext);
-return VOID;
+
+"extern" {
+  DEBUGF( "EXTERN\n" );
+  return EXTERN;
 }
-{CHAR} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
+
+"auto" {
+  DEBUGF( "AUTO\n" );
+  return AUTO;
 }
-printf("%s\n", yytext);
-return CHAR;
+
+"register" {
+  DEBUGF( "REGISTER\n" );
+  return REGISTER;
 }
-{SHORT} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return SHORT;
-}
-{INT} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return INT;
-}
-{LONG} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return LONG;
-}
-{FLOAT} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return FLOAT;
-}
-{DOUBLE} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return DOUBLE;
+
+"sizeof" {
+  DEBUGF( "SIZEOF\n" );
+  return SIZEOF;
 }
 
 
 
 
-{LPAREN} {
-printf("%s\n", yytext);
-return LPAREN;
+
+"return" {
+  DEBUGF( "RETURN\n" );
+  return RETURN;
 }
-{RPAREN} {
-printf("%s\n", yytext);
-return RPAREN;
+"default" {
+  DEBUGF( "DEFAULT\n" );
+  return DEFAULT;
 }
-{RCBRACKET} {
-printf("%s\n", yytext);
-return RCBRACKET;
+"while" {
+  DEBUGF( "WHILE\n" );
+  return WHILE;
 }
-{LCBRACKET} {
-printf("%s\n", yytext);
-return LCBRACKET;
+"do" {
+  DEBUGF( "DO\n" );
+  return DO;
 }
-{LBRACKET} {
-printf("%s\n", yytext);
-return LBRACKET;
+"if" {
+  DEBUGF( "IF\n" );
+  return IF;
 }
-{RBRACKET} {
-printf("%s\n", yytext);
-return RBRACKET;
+"else" {
+  DEBUGF( "ELSE\n" );
+  return ELSE;
 }
-{COMMA} {
-printf("%s\n", yytext);
-return COMMA;
+"for" {
+  DEBUGF( "FOR\n" );
+  return FOR;
 }
-{SEMICOLON} {
-printf("%s\n", yytext);
-return SEMICOLON;
+"switch" {
+  DEBUGF( "SWITCH\n" );
+  return SWITCH;
+}
+"case" {
+  DEBUGF( "CASE\n" );
+  return CASE;
+}
+"continue" {
+  DEBUGF( "CONTINUE\n" );
+  return CONTINUE;
+}
+"break" {
+  DEBUGF( "BREAK\n" );
+  return BREAK;
+}
+"goto" {
+  DEBUGF( "GOTO\n" );
+  return GOTO;
+}
+
+
+"(" {
+  DEBUGF( "(\n" );
+  return '(';
+}
+")" {
+  DEBUGF( ")\n" );
+  return ')';
+}
+"[" {
+  DEBUGF( "[\n" );
+  return '[';
+}
+"]" {
+  DEBUGF( "]\n" );
+  return ']';
+}
+"{" {
+  DEBUGF( "{\n" );
+  return '{';
+}
+"}" {
+  DEBUGF( "}\n" );
+  return '}';
+}
+"," {
+  DEBUGF( ",\n" );
+  return ',';
+}
+";" {
+  DEBUGF( ";\n" );
+  return ';';
+}
+
+
+"==" {
+  DEBUGF( "EQ\n" );
+  return EQ;
+}
+"!=" {
+  DEBUGF( "NE\n" );
+  return NE;
+}
+">=" {
+  DEBUGF( "GE\n" );
+  return GE;
+}
+
+"<=" {
+  DEBUGF( "LE\n" );
+  return LE;
+}
+
+">" {
+  DEBUGF( "GT\n" );
+  return GT;
+}
+"<" {
+  DEBUGF( "LT\n" );
+  return LT;
+}
+"+" {
+  DEBUGF( "ADD\n" );
+  return ADD;
+}
+"-" {
+  DEBUGF( "SUB\n" );
+  return SUB;
+}
+"*" {
+  DEBUGF( "MUL\n" );
+  return MUL;
+}
+"/" {
+  DEBUGF( "DIV\n" );
+  return DIV;
+}
+"%" {
+  DEBUGF( "MOD\n" );
+  return MOD;
+}
+"||" {
+  DEBUGF( "OR\n" );
+  return OR;
+}
+"&&" {
+  DEBUGF( "ADD\n" );
+  return ADD;
+}
+"|" {
+  DEBUGF( "BITOR\n" );
+  return BITOR;
+}
+"&" {
+  DEBUGF( "BITAND\n" );
+  return BITAND;
+}
+"^" {
+  DEBUGF( "BITXOR\n" );
+  return BITXOR;
+}
+"!" {
+  DEBUGF( "NOT\n" );
+  return NOT;
+}
+"~" {
+  DEBUGF( "COM\n" );
+  return COM;
+}
+"<<" {
+  DEBUGF( "LSH\n" );
+  return LSH;
+}
+">>" {
+  DEBUGF( "RSH\n" );
+  return RSH;
+}
+"=" {
+  DEBUGF( "SET\n" );
+  return SET;
+}
+"+=" {
+  DEBUGF( "SETADD\n" );
+  return SETADD;
+}
+"-=" {
+  DEBUGF( "SETSUB\n" );
+  return SETSUB;
+}
+"*=" {
+  DEBUGF( "SETMUL\n" );
+  return SETMUL;
+}
+"/=" {
+  DEBUGF( "SETDIV\n" );
+  return SETDIV;
+}
+"%=" {
+  DEBUGF( "SETMOD\n" );
+  return SETMOD;
+}
+"|=" {
+  DEBUGF( "SETOR\n" );
+  return SETOR;
+}
+"&=" {
+  DEBUGF( "SETAND\n" );
+  return SETAND;
+}
+"^=" {
+  DEBUGF( "SETXOR\n" );
+  return SETXOR;
+}
+"<<=" {
+  DEBUGF( "SETLSH\n" );
+  return SETLSH;
+}
+">>=" {
+  DEBUGF( "SETRSH\n" );
+  return SETRSH;
 }
 
 
 
-{SETLSH} {
-printf("SETLSH\n", yytext);
-return SETLSH;
+
+"void" {
+  DEBUGF( "VOID\n" );
+  return VOID;
 }
-{SETRSH} {
-printf("SETRSH\n", yytext);
-return SETRSH;
+"char" {
+  DEBUGF( "CHAR\n" );
+  return CHAR;
 }
-{LSH} {
-printf("LSH\n", yytext);
-return LSH;
+"short" {
+  DEBUGF( "SHORT\n" );
+  return SHORT;
 }
-{RSH} {
-printf("RSH\n", yytext);
-return RSH;
+"int" {
+  DEBUGF( "INT\n" );
+  return INT;
 }
-{EQ} {
-printf("EQ\n", yytext);
-return EQ;
+"long" {
+  DEBUGF( "LONG\n" );
+  return LONG;
 }
-{NE} {
-printf("NE\n", yytext);
-return NE;
+"float" {
+  DEBUGF( "FLOAT\n" );
+  return FLOAT;
 }
-{GE} {
-printf("GE\n", yytext);
-return GE;
-}
-{LE} {
-printf("LE\n", yytext);
-return LE;
-}
-{OR} {
-printf("OR\n", yytext);
-return OR;
-}
-{AND} {
-printf("AND\n", yytext);
-return AND;
-}
-{SETADD} {
-printf("SETADD\n", yytext);
-return SETADD;
-}
-{SETSUB} {
-printf("SETSUB\n", yytext);
-return SETSUB;
-}
-{SETMUL} {
-printf("SETMUL\n", yytext);
-return SETMUL;
-}
-{SETDIV} {
-printf("SETDIV\n", yytext);
-return SETDIV;
-}
-{SETMOD} {
-printf("SETMOD\n", yytext);
-return SETMOD;
-}
-{SETOR} {
-printf("SETOR\n", yytext);
-return SETOR;
-}
-{SETAND} {
-printf("SETAND\n", yytext);
-return SETAND;
-}
-{SETXOR} {
-printf("SETXOR\n", yytext);
-return SETXOR;
-}
-{SET} {
-printf("SET\n", yytext);
-return SET;
-}
-{GT} {
-printf("GT\n", yytext);
-return GT;
-}
-{LT} {
-printf("LT\n", yytext);
-return LT;
-}
-{ADD} {
-printf("ADD\n", yytext);
-return ADD;
-}
-{SUB} {
-printf("SUB\n", yytext);
-return SUB;
-}
-{MUL} {
-printf("MUL\n", yytext);
-return MUL;
-}
-{DIV} {
-printf("DIV\n", yytext);
-return DIV;
-}
-{MOD} {
-printf("MOD\n", yytext);
-return MOD;
-}
-{BITOR} {
-printf("BITOR\n", yytext);
-return BITOR;
-}
-{BITAND} {
-printf("BITAND\n", yytext);
-return BITAND;
-}
-{BITXOR} {
-printf("BITXOR\n", yytext);
-return BITXOR;
-}
-{NOT} {
-printf("NOT\n", yytext);
-return NOT;
-}
-{COM} {
-printf("COM\n", yytext);
-return COM;
+"double" {
+  DEBUGF( "DOUBLE\n" );
+  return DOUBLE;
 }
 
 
 
 
-{RETURN} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
+
+
+
+
+
+
+
+
+
+
+
+"0x"{HEXVAL}+ {
+  DEBUGF( "INTVAL\n" );
+  return INTVAL;
 }
-printf("%s\n", yytext);
-return RETURN;
+"0"{OCTVAL}*  {
+  DEBUGF( "INTVAL\n" );
+  return INTVAL;
 }
-{DO} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return DO;
-}
-{WHILE} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return WHILE;
-}
-{FOR} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return FOR;
-}
-{SWITCH} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return SWITCH;
-}
-{CASE} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return CASE;
-}
-{DEFAULT} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return DEFAULT;
-}
-{IF} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return IF;
-}
-{ELSE} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return ELSE;
-}
-{CONTINUE} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return CONTINUE;
-}
-{BREAK} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return BREAK;
-}
-{GOTO} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return GOTO;
+[1-9]{INTVAL}* {
+  DEBUGF( "INTVAL\n" );
+  return INTVAL;
 }
 
 
 
-{UNSIGNED} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return UNSIGNED;
-}
-{TYPEDEF} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return TYPEDEF;
-}
-{STRUCT} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return STRUCT;
-}
-{UNION} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return UNION;
-}
-{CONST} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return CONST;
-}
-{STATIC} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return STATIC;
-}
-{EXTERN} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return EXTERN;
-}
-{AUTO} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return AUTO;
-}
-{REGISTER} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return REGISTER;
-}
-{SIZEOF} {
-int i = 0;
-for(i = 0; i < yyleng; i++){
-  yytext[i] = toupper(yytext[i]);
-}
-printf("%s\n", yytext);
-return SIZEOF;
-}
+
 
 
 
 
 {ID} {
-/**************************************
-* If an identifier is matched, then 
-* print ID and return a token ID
-**************************************/
+  DEBUGF( "ID\n" ); yylval.id = strdup(yytext);
+  return ID;
+     }
 
-printf("ID\n");
-return ID;
+
+
+"//".* {
+  /* ignored */
 }
 
-
-{WHITE} {
-// remove whitespace
+"/*" {
+  BEGIN COMMENT;
 }
+<COMMENT>"*/" {
+  BEGIN 0;
+}
+<COMMENT>([\n](\r)?)|. {
+  /* ignored */ } 
 
 
 
+{whitesp}+ {
+  /* ignored */
+           }
 
+
+. {
+  fprintf( stderr, "Unexpected input at line %d: '%s'\n", yylineno, yytext );
+  exit( 1 );
+}
