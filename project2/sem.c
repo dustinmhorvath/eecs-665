@@ -36,26 +36,27 @@ void bgnstmt()
  * call - procedure invocation
  */
 struct sem_rec *call(char *f, struct sem_rec *args){
-  int numArgs = 0;
+
+  int num = 0;
   struct sem_rec *next;
   next = args;
 
   while (next != NULL){
     next = next -> back.s_true;
-    numArgs++;
+    num++;
   }
 
-  struct sem_rec *sem_rec_array[numArgs];
+  struct sem_rec *sem_rec_array[num];
   next = args;
 
   int i;
-  for(i = numArgs; next != NULL; i--){
+  for(i = num; next != NULL; i--){
     sem_rec_array[i - 1] = next;
     next = next -> back.s_true;
   }
 
 
-  for(i = 0; i < numArgs; i++){
+  for(i = 0; i < num; i++){
     if(sem_rec_array[i] -> s_mode == 0 || sem_rec_array[i] -> s_mode == 1){
       printf("argi t%d\n", sem_rec_array[i] -> s_place);
     }
@@ -83,27 +84,29 @@ struct sem_rec *call(char *f, struct sem_rec *args){
     scope = "param";
   }
   printf("t%d := %s %s\n", nexttemp(), scope, f);
-  printf("t%d := f%d t%d %d\n", nexttemp(), temp_id -> i_type, currtemp(), numArgs);
+  printf("t%d := f%d t%d %d\n", nexttemp(), temp_id -> i_type, currtemp(), num);
   return ((struct sem_rec *) NULL);
 }
 
 /*
  * ccand - logical and
  */
-struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
-{
+struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2){
   struct sem_rec *sem_rec_pointer;
+
   sem_rec_pointer = gen("&&", e1, e2, e1 -> s_mode);
+
   printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
   printf("br B%d\n", ++numblabels);
+
   backpatch(e1 -> back.s_true, m);
   sem_rec_pointer -> back.s_true = e2 -> back.s_true;
   sem_rec_pointer -> s_false = merge(e1 -> s_false, e2 -> s_false);
+
   return (node(0, 0,
-        node(numblabels - 1, 0, (struct sem_rec *) NULL,
-          (struct sem_rec *) NULL),
-        node(numblabels, 0, (struct sem_rec *) NULL,
-          (struct sem_rec *) NULL)));
+    node(numblabels - 1, 0, (struct sem_rec *) NULL, (struct sem_rec *) NULL),
+    node(numblabels,     0, (struct sem_rec *) NULL, (struct sem_rec *) NULL)
+    ));
 }
 
 /*
@@ -111,17 +114,16 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *ccexpr(struct sem_rec *e)
 {
-  struct sem_rec *sem_rec_pointer;
+  struct sem_rec *t1;
 
   if(e){
-    sem_rec_pointer = gen("!=", e, cast(con("0"), e -> s_mode), e -> s_mode);
-    printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
+    t1 = gen("!=", e, cast(con("0"), e -> s_mode), e -> s_mode);
+    printf("bt t%d B%d\n", t1 -> s_place, ++numblabels);
     printf("br B%d\n", ++numblabels);
     return (node(0, 0,
-          node(numblabels - 1, 0, (struct sem_rec *) NULL,
-            (struct sem_rec *) NULL),
-          node(numblabels, 0, (struct sem_rec *) NULL,
-            (struct sem_rec *) NULL)));
+      node(numblabels - 1, 0, (struct sem_rec *) NULL, (struct sem_rec *) NULL),
+      node(numblabels,     0, (struct sem_rec *) NULL, (struct sem_rec *) NULL)
+      ));
   }
   else
     fprintf(stderr, "Argument sem_rec is NULL\n");
@@ -130,36 +132,40 @@ struct sem_rec *ccexpr(struct sem_rec *e)
 /*
  * ccnot - logical not
  */
-struct sem_rec *ccnot(struct sem_rec *e)
-{
+struct sem_rec *ccnot(struct sem_rec *e){
   struct sem_rec *sem_rec_pointer;
+
   sem_rec_pointer = gen("!", e, cast(con("0"), e -> s_mode), e -> s_mode);
+
   printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
   printf("br B%d\n", ++numblabels);
-  return (node(0, 0,
-        node(numblabels - 1, 0, (struct sem_rec *) NULL,
-          (struct sem_rec *) NULL),
-        node(numblabels, 0, (struct sem_rec *) NULL,
-          (struct sem_rec *) NULL)));
+
+  return( node(0, 0,
+    node(numblabels - 1, 0, (struct sem_rec *) NULL, (struct sem_rec *) NULL),
+    node(numblabels,     0, (struct sem_rec *) NULL, (struct sem_rec *) NULL)
+    ));
 }
 
 /*
  * ccor - logical or
  */
-struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
-{
+struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2){
   struct sem_rec *sem_rec_pointer;
+
   sem_rec_pointer = gen("||", e1, e2, e1 -> s_mode);
+  
   printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
   printf("br B%d\n", ++numblabels);
+  
   backpatch(e1 -> back.s_true, m);
+  
   sem_rec_pointer -> back.s_true = e2 -> back.s_true;
   sem_rec_pointer -> s_false = merge(e1 -> s_false, e2 -> s_false);
-  return (node(0, 0,
-        node(numblabels - 1, 0, (struct sem_rec *) NULL,
-          (struct sem_rec *) NULL),
-        node(numblabels, 0, (struct sem_rec *) NULL,
-          (struct sem_rec *) NULL)));
+  
+  return( node(0, 0,
+    node(numblabels - 1, 0, (struct sem_rec *) NULL, (struct sem_rec *) NULL),
+    node(numblabels,     0, (struct sem_rec *) NULL, (struct sem_rec *) NULL)
+    ));
 }
 
 /*
@@ -175,7 +181,10 @@ struct sem_rec *con(char *x)
     p -> i_scope = GLOBAL;
     p -> i_defined = 1;
   }
+
+  /* print the quad t%d = const */
   printf("t%d := %s\n", nexttemp(), x);
+
   /* construct a new node corresponding to this constant generation
      into a temporary. This will allow this temporary to be referenced
      in an expression later*/
