@@ -45,27 +45,27 @@ struct sem_rec *call(char *f, struct sem_rec *args){
     numArgs++;
   }
 
-  struct sem_rec *l[numArgs];
-  
+  struct sem_rec *sem_rec_array[numArgs];
   next = args;
 
   int i;
   for(i = numArgs; next != NULL; i--){
-    l[i - 1] = next;
+    sem_rec_array[i - 1] = next;
     next = next -> back.s_true;
   }
 
-  for(i = 0; i < numArgs; i++) {
-    if (l[i] -> s_mode == 0 || l[i] -> s_mode == 1) {
-      printf("argi t%d\n", l[i] -> s_place);
+
+  for(i = 0; i < numArgs; i++){
+    if(sem_rec_array[i] -> s_mode == 0 || sem_rec_array[i] -> s_mode == 1){
+      printf("argi t%d\n", sem_rec_array[i] -> s_place);
     }
     else {
-      printf("argf t%d\n", l[i] -> s_place);
+      printf("argf t%d\n", sem_rec_array[i] -> s_place);
     }
   }
 
   struct id_entry *temp_id;
-  if ((temp_id = lookup(f, 0)) == NULL) {
+  if((temp_id = lookup(f, 0)) == NULL){
     temp_id = install(f, 0);
     temp_id -> i_type = T_INT;
     temp_id -> i_type = GLOBAL;
@@ -73,13 +73,13 @@ struct sem_rec *call(char *f, struct sem_rec *args){
   }
 
   char *scope;
-  if (temp_id -> i_scope & GLOBAL) {
+  if(temp_id -> i_scope & GLOBAL){
     scope = "global";
   }
-  else if (temp_id -> i_scope & LOCAL) {
+  else if(temp_id -> i_scope & LOCAL){
     scope = "local";
   }
-  else if (temp_id -> i_scope & PARAM) {
+  else if(temp_id -> i_scope & PARAM){
     scope = "param";
   }
   printf("t%d := %s %s\n", nexttemp(), scope, f);
@@ -92,18 +92,18 @@ struct sem_rec *call(char *f, struct sem_rec *args){
  */
 struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
 {
-  struct sem_rec *t1;
-  t1 = gen("&&", e1, e2, e1 -> s_mode);
-  printf("bt t%d B%d\n", t1 -> s_place, ++numblabels);
+  struct sem_rec *sem_rec_pointer;
+  sem_rec_pointer = gen("&&", e1, e2, e1 -> s_mode);
+  printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
   printf("br B%d\n", ++numblabels);
   backpatch(e1 -> back.s_true, m);
-  t1 -> back.s_true = e2 -> back.s_true;
-  t1 -> s_false = merge(e1 -> s_false, e2 -> s_false);
+  sem_rec_pointer -> back.s_true = e2 -> back.s_true;
+  sem_rec_pointer -> s_false = merge(e1 -> s_false, e2 -> s_false);
   return (node(0, 0,
-               node(numblabels - 1, 0, (struct sem_rec *) NULL,
-                    (struct sem_rec *) NULL),
-               node(numblabels, 0, (struct sem_rec *) NULL,
-                    (struct sem_rec *) NULL)));
+        node(numblabels - 1, 0, (struct sem_rec *) NULL,
+          (struct sem_rec *) NULL),
+        node(numblabels, 0, (struct sem_rec *) NULL,
+          (struct sem_rec *) NULL)));
 }
 
 /*
@@ -111,17 +111,17 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *ccexpr(struct sem_rec *e)
 {
-  struct sem_rec *t1;
+  struct sem_rec *sem_rec_pointer;
 
-  if (e) {
-    t1 = gen("!=", e, cast(con("0"), e -> s_mode), e -> s_mode);
-    printf("bt t%d B%d\n", t1 -> s_place, ++numblabels);
+  if(e){
+    sem_rec_pointer = gen("!=", e, cast(con("0"), e -> s_mode), e -> s_mode);
+    printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
     printf("br B%d\n", ++numblabels);
     return (node(0, 0,
-                 node(numblabels - 1, 0, (struct sem_rec *) NULL,
-                      (struct sem_rec *) NULL),
-                 node(numblabels, 0, (struct sem_rec *) NULL,
-                      (struct sem_rec *) NULL)));
+          node(numblabels - 1, 0, (struct sem_rec *) NULL,
+            (struct sem_rec *) NULL),
+          node(numblabels, 0, (struct sem_rec *) NULL,
+            (struct sem_rec *) NULL)));
   }
   else
     fprintf(stderr, "Argument sem_rec is NULL\n");
@@ -132,15 +132,15 @@ struct sem_rec *ccexpr(struct sem_rec *e)
  */
 struct sem_rec *ccnot(struct sem_rec *e)
 {
-  struct sem_rec *t1;
-  t1 = gen("!", e, cast(con("0"), e -> s_mode), e -> s_mode);
-  printf("bt t%d B%d\n", t1 -> s_place, ++numblabels);
+  struct sem_rec *sem_rec_pointer;
+  sem_rec_pointer = gen("!", e, cast(con("0"), e -> s_mode), e -> s_mode);
+  printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
   printf("br B%d\n", ++numblabels);
   return (node(0, 0,
-               node(numblabels - 1, 0, (struct sem_rec *) NULL,
-                    (struct sem_rec *) NULL),
-               node(numblabels, 0, (struct sem_rec *) NULL,
-                    (struct sem_rec *) NULL)));
+        node(numblabels - 1, 0, (struct sem_rec *) NULL,
+          (struct sem_rec *) NULL),
+        node(numblabels, 0, (struct sem_rec *) NULL,
+          (struct sem_rec *) NULL)));
 }
 
 /*
@@ -148,18 +148,18 @@ struct sem_rec *ccnot(struct sem_rec *e)
  */
 struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
 {
-  struct sem_rec *t1;
-  t1 = gen("||", e1, e2, e1 -> s_mode);
-  printf("bt t%d B%d\n", t1 -> s_place, ++numblabels);
+  struct sem_rec *sem_rec_pointer;
+  sem_rec_pointer = gen("||", e1, e2, e1 -> s_mode);
+  printf("bt t%d B%d\n", sem_rec_pointer -> s_place, ++numblabels);
   printf("br B%d\n", ++numblabels);
   backpatch(e1 -> back.s_true, m);
-  t1 -> back.s_true = e2 -> back.s_true;
-  t1 -> s_false = merge(e1 -> s_false, e2 -> s_false);
+  sem_rec_pointer -> back.s_true = e2 -> back.s_true;
+  sem_rec_pointer -> s_false = merge(e1 -> s_false, e2 -> s_false);
   return (node(0, 0,
-               node(numblabels - 1, 0, (struct sem_rec *) NULL,
-                    (struct sem_rec *) NULL),
-               node(numblabels, 0, (struct sem_rec *) NULL,
-                    (struct sem_rec *) NULL)));
+        node(numblabels - 1, 0, (struct sem_rec *) NULL,
+          (struct sem_rec *) NULL),
+        node(numblabels, 0, (struct sem_rec *) NULL,
+          (struct sem_rec *) NULL)));
 }
 
 /*
@@ -169,7 +169,7 @@ struct sem_rec *con(char *x)
 {
   struct id_entry *p;
 
-  if ((p = lookup(x, 0)) == NULL) {
+  if((p = lookup(x, 0)) == NULL){
     p = install(x, 0);
     p -> i_type = T_INT;
     p -> i_scope = GLOBAL;
@@ -180,7 +180,7 @@ struct sem_rec *con(char *x)
      into a temporary. This will allow this temporary to be referenced
      in an expression later*/
   return (node(currtemp(), p -> i_type, (struct sem_rec *) NULL,
-               (struct sem_rec *) NULL));
+        (struct sem_rec *) NULL));
 }
 
 /*
@@ -212,7 +212,7 @@ void dodo(int m1, int m2, struct sem_rec *e, int m3)
  * dofor - for statement
  */
 void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
-           int m3, struct sem_rec *n2, int m4)
+    int m3, struct sem_rec *n2, int m4)
 {
   backpatch(e2 -> back.s_true, m3);
   backpatch(e2 -> s_false, m4);
@@ -241,7 +241,7 @@ void doif(struct sem_rec *e, int m1, int m2)
  * doifelse - if then else statement
  */
 void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
-              int m2, int m3)
+    int m2, int m3)
 {
   backpatch(e -> back.s_true, m1);
   backpatch(n, m2);
@@ -254,7 +254,7 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
 void doret(struct sem_rec *e)
 {
   printf("ret");
-  if (e -> s_mode & T_DOUBLE && (!(e -> s_mode & T_ADDR))) {
+  if(e -> s_mode & T_DOUBLE && (!(e -> s_mode & T_ADDR))){
     printf("f ");
   }
   else
@@ -266,7 +266,7 @@ void doret(struct sem_rec *e)
  * dowhile - while statementalloc %d
  */
 void dowhile(int m1, struct sem_rec *e, int m2, struct sem_rec *n,
-             int m3)
+    int m3)
 {
   backpatch(e -> back.s_true, m2);
   backpatch(e -> s_false, m3);
@@ -296,20 +296,20 @@ struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
 void fhead(struct id_entry *p)
 {
   int i;
-  for (i = 0; i < formalnum; i++) {
-    if (formaltypes[i] == 'i') {
+  for(i = 0; i < formalnum; i++){
+    if(formaltypes[i] == 'i'){
       printf("formal %d\n", 4);
     }
-    else if (formaltypes[i] == 'f') {
+    else if(formaltypes[i] == 'f'){
       printf("formal %d\n", 8);
     }
   }
 
-  for (i = 0; i < localnum; i++) {
-    if (localtypes[i] == 'i') {
+  for(i = 0; i < localnum; i++){
+    if(localtypes[i] == 'i'){
       printf("localloc %d\n", 4);
     }
-    else if (localtypes[i] == 'f') {
+    else if(localtypes[i] == 'f'){
       printf("localloc %d\n", 8);
     }
   }
@@ -340,20 +340,20 @@ void ftail()
 struct sem_rec *id(char *x)
 {
   struct id_entry *p;
-  if ((p = lookup(x, 0)) == NULL) {
+  if((p = lookup(x, 0)) == NULL){
     yyerror("undeclared identifier");
     p = install(x, -1);
     p -> i_type = T_INT;
     p -> i_scope = LOCAL;
     p -> i_defined = 1;
   }
-  if (p -> i_scope == GLOBAL)
+  if(p -> i_scope == GLOBAL)
     printf("t%d := global %s\n", nexttemp(), x);
-  else if (p -> i_scope == LOCAL)
+  else if(p -> i_scope == LOCAL)
     printf("t%d := local %d\n", nexttemp(), p -> i_offset);
-  else if (p -> i_scope == PARAM) {
+  else if(p -> i_scope == PARAM){
     printf("t%d := param %d\n", nexttemp(), p -> i_offset);
-    if (p -> i_type & T_ARRAY) {
+    if(p -> i_type & T_ARRAY){
       (void) nexttemp();
       printf("t%d := @i t%d\n", currtemp(), currtemp() - 1);
     }
@@ -361,7 +361,7 @@ struct sem_rec *id(char *x)
 
   /* add the T_ADDR to know that it is still an address */
   return (node(currtemp(), p -> i_type | T_ADDR, (struct sem_rec *) NULL,
-               (struct sem_rec *) NULL));
+        (struct sem_rec *) NULL));
 }
 
 /*
@@ -396,10 +396,10 @@ int m()
 struct sem_rec *n()
 {
   printf("br B%d\n", ++numblabels);
-  struct sem_rec *t1;
-  t1 = (struct sem_rec *)malloc(sizeof(struct sem_rec));
-  t1 -> s_place = numblabels;
-  return (t1);
+  struct sem_rec *sem_rec_pointer;
+  sem_rec_pointer = (struct sem_rec *)malloc(sizeof(struct sem_rec));
+  sem_rec_pointer -> s_place = numblabels;
+  return (sem_rec_pointer);
 }
 
 /*
@@ -407,7 +407,7 @@ struct sem_rec *n()
  */
 struct sem_rec *op1(char *op, struct sem_rec *y)
 {
-  if (*op == '@' && !(y -> s_mode & T_ARRAY)) {
+  if(*op == '@' && !(y -> s_mode & T_ARRAY)){
     /* get rid of T_ADDR if it is being dereferenced so can handle
        T_DOUBLE types correctly */
     y -> s_mode &= ~T_ADDR;
@@ -423,22 +423,22 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
  */
 struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-  int xMode, yMode;
-  if (x -> s_mode & T_INT && !(y -> s_mode & T_INT)) {
-    xMode = T_INT;
-    yMode = T_DOUBLE;
+  int x_mode, y_mode;
+  if(x -> s_mode & T_INT && !(y -> s_mode & T_INT)){
+    x_mode = T_INT;
+    y_mode = T_DOUBLE;
   }
-  else if (!(x -> s_mode & T_INT) && y -> s_mode & T_INT) {
-    yMode = T_INT;
-    xMode = T_DOUBLE;
+  else if(!(x -> s_mode & T_INT) && y -> s_mode & T_INT){
+    y_mode = T_INT;
+    x_mode = T_DOUBLE;
   }
-  else if (!(x -> s_mode & T_INT) && !(y -> s_mode & T_INT)) {
-    xMode = T_DOUBLE;
-    yMode = T_DOUBLE;
+  else if(!(x -> s_mode & T_INT) && !(y -> s_mode & T_INT)){
+    x_mode = T_DOUBLE;
+    y_mode = T_DOUBLE;
   }
 
-  if (xMode != yMode) {
-    if (xMode > yMode) {
+  if(x_mode != y_mode){
+    if(x_mode > y_mode){
       y = cast(y, x -> s_mode);
     }
     else {
@@ -462,10 +462,10 @@ struct sem_rec *opb(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-  if (x -> s_mode > y -> s_mode) {
+  if(x -> s_mode > y -> s_mode){
     y = cast(y, x -> s_mode);
   }
-  else if (y -> s_mode > x -> s_mode) {
+  else if(y -> s_mode > x -> s_mode){
     x = cast(x, y -> s_mode);
   }
 
@@ -482,80 +482,88 @@ struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
 /*
  * set - assignment operators
  */
-struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
-{
+struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y){
   /* assign the value of expression y to the lval x */
-  struct sem_rec *p, *cast_y;
+  struct sem_rec *p, *casted_y;
 
-  if (*op != '\0' || x == NULL || y == NULL) {
-    int xMode = x -> s_mode;
-    int yMode = y -> s_mode;
-    if (xMode & T_INT) {
-      xMode = T_INT;
+  if(*op != '\0' || x == NULL || y == NULL){
+    int x_mode = x -> s_mode;
+    int y_mode = y -> s_mode;
+    if(x_mode & T_INT){
+      x_mode = T_INT;
     }
     else {
-      xMode = T_DOUBLE;
+      x_mode = T_DOUBLE;
     }
-    if (yMode & T_INT) {
-      yMode = T_INT;
+    if(y_mode & T_INT){
+      y_mode = T_INT;
     }
     else {
-      yMode = T_DOUBLE;
+      y_mode = T_DOUBLE;
     }
-    struct sem_rec *q = gen("@", (struct sem_rec *) NULL, x, xMode);
+    struct sem_rec *q = gen("@", (struct sem_rec *) NULL, x, x_mode);
     struct sem_rec *r;
-    if (y -> s_mode == T_ARRAY) {
-      r = gen("@", (struct sem_rec *) NULL, cast(y, xMode), yMode);
+    if(y -> s_mode == T_ARRAY){
+      r = gen("@", (struct sem_rec *) NULL, cast(y, x_mode), y_mode);
     }
     else {
-      r = cast(y, xMode);
+      r = cast(y, x_mode);
     }
-    struct sem_rec *t = gen(op, q, r, xMode);
-    return (gen("=", x, t, xMode));
+    struct sem_rec *t = gen(op, q, r, x_mode);
+    return (gen("=", x, t, x_mode));
   }
+
+
 
   /* if for type consistency of x and y */
-  cast_y = y;
-  if ((x -> s_mode & T_DOUBLE) && !(y -> s_mode & T_DOUBLE)) {
+  casted_y = y;
+  if((x -> s_mode & T_DOUBLE) && !(y -> s_mode & T_DOUBLE)){
     /*cast y to a double*/
     printf("t%d := cvf t%d\n", nexttemp(), y -> s_place);
-    cast_y = node(currtemp(), T_DOUBLE, (struct sem_rec *) NULL,
-                  (struct sem_rec *) NULL);
+    casted_y = node(currtemp(), T_DOUBLE, (struct sem_rec *) NULL,
+        (struct sem_rec *) NULL);
   }
-  else if ((x -> s_mode & T_INT) && !(y -> s_mode & T_INT)) {
+  else if((x -> s_mode & T_INT) && !(y -> s_mode & T_INT)){
     /*convert y to integer*/
     printf("t%d := cvi t%d\n", nexttemp(), y -> s_place);
-    cast_y = node(currtemp(), T_INT, (struct sem_rec *) NULL,
-                  (struct sem_rec *) NULL);
+    casted_y = node(currtemp(), T_INT, (struct sem_rec *) NULL,
+        (struct sem_rec *) NULL);
   }
+
+
   /*output quad for assigndclrment*/
-  if (x -> s_mode & T_DOUBLE)
+  if(x -> s_mode & T_DOUBLE)
     printf("t%d := t%d =f t%d\n", nexttemp(),
-           x -> s_place, cast_y -> s_place);
+        x -> s_place, casted_y -> s_place);
   else
     printf("t%d := t%d =i t%d\n", nexttemp(),
-           x -> s_place, cast_y -> s_place);
+        x -> s_place, casted_y -> s_place);
   /*create a new node to allow just created temporary to be referenced later */
   return (node(currtemp(), (x -> s_mode & ~(T_ARRAY)),
-               (struct sem_rec *)NULL, (struct sem_rec *)NULL));
+        (struct sem_rec *)NULL, (struct sem_rec *)NULL));
 }
+
+
 /*
  * startloopscope - start the scope for a loop
  */
-void startloopscope()
-{
+void startloopscope(){
   enterblock();
 }
+
+
 /*
  * string - generate code for a string
  */
-struct sem_rec *string(char *s)
-{
+struct sem_rec *string(char *s){
   printf("t%d := %s\n", nexttemp(), s);
-  struct sem_rec *t1;
-  t1 = (struct sem_rec *)malloc(sizeof(struct sem_rec));
-  t1 -> s_place = currtemp();
-  return t1;
+
+
+  struct sem_rec *sem_rec_pointer;
+  sem_rec_pointer = (struct sem_rec *)malloc(sizeof(struct sem_rec));
+  sem_rec_pointer -> s_place = currtemp();
+
+  return sem_rec_pointer;
 }
 /************* Helper Functions **************/
 
@@ -564,9 +572,9 @@ struct sem_rec *string(char *s)
  */
 struct sem_rec *cast(struct sem_rec *y, int t)
 {
-  if (t == T_DOUBLE && y -> s_mode != T_DOUBLE)
+  if(t == T_DOUBLE && y -> s_mode != T_DOUBLE)
     return (gen("cv", (struct sem_rec *) NULL, y, t));
-  else if (t != T_DOUBLE && y -> s_mode == T_DOUBLE)
+  else if(t != T_DOUBLE && y -> s_mode == T_DOUBLE)
     return (gen("cv", (struct sem_rec *) NULL, y, t));
   else
     return (y);
@@ -577,23 +585,23 @@ struct sem_rec *cast(struct sem_rec *y, int t)
  */
 struct sem_rec *gen(char *op, struct sem_rec *x, struct sem_rec *y, int t)
 {
-  if (strncmp(op, "arg", 3) != 0 && strncmp(op, "ret", 3) != 0)
+  if(strncmp(op, "arg", 3) != 0 && strncmp(op, "ret", 3) != 0)
     printf("t%d := ", nexttemp());
-  if (x != NULL && *op != 'f')
+  if(x != NULL && *op != 'f')
     printf("t%d ", x -> s_place);
   printf("%s", op);
-  if (t & T_DOUBLE && (!(t & T_ADDR) || (*op == '[' && *(op + 1) == ']'))) {
+  if(t & T_DOUBLE && (!(t & T_ADDR) || (*op == '[' && *(op + 1) == ']'))){
     printf("f");
-    if (*op == '%')
+    if(*op == '%')
       yyerror("cannot %% floating-point values");
   }
   else
     printf("i");
-  if (x != NULL && *op == 'f')
+  if(x != NULL && *op == 'f')
     printf(" t%d %d", x -> s_place, y -> s_place);
-  else if (y != NULL)
+  else if(y != NULL)
     printf(" t%d", y -> s_place);
   printf("\n");
   return (node(currtemp(), t, (struct sem_rec *) NULL,
-               (struct sem_rec *) NULL));
+        (struct sem_rec *) NULL));
 }
