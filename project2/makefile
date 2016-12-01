@@ -6,11 +6,11 @@ csem:	sym.o scan.o sem.o semutil.o cgram.o
 	gcc -g -o csem sym.o scan.o sem.o semutil.o cgram.o
 
 test:
-	make clean & make
+	make clean
+	make csem
 	./csem < test.txt > test.out
 	./sem_base.exe < test.txt > correct.out
 	diff test.out correct.out
-
 
 sym.o:	sym.c cc.h sym.h
 
