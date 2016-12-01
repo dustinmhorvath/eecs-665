@@ -3,7 +3,7 @@ YACC=yacc
 CC=gcc
 
 LFLAGS=
-YFLAGS=
+YFLAGS= -v
 CFLAGS=-Wall -Wno-unused-label -Wno-unused -I. -DNDEBUG
 
 all: fcg

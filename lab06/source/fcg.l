@@ -1,6 +1,6 @@
 /*
  * Dustin Horvath
- * EECS 665 Lab04
+ * EECS 665 Lab06
  * Lexical Scanner for C-like language
  *
  */
@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+//not sure why this needs included, seems like a finicky yacc thing
 #include <fcg.yacc.h>
 
 
@@ -30,279 +31,269 @@ int list_type;
 %option       noyywrap nounput yylineno
 %x            COMMENT
 
-ID         [a-zA-Z][a-zA-Z0-9_]*
-whitesp       [ \t\n\r]
-nonwhitesp    [^ \t\n\r]
-INTVAL         [0-9]
-HEXVAL      [0-9a-fA-F]
-OCTVAL      [0-7]
+ID            [a-zA-Z][a-zA-Z0-9_]*
+
+whitespace    [ \t\n\r]
+nonwhitespace [^ \t\n\r]
+HEXVAL        [0-9a-fA-F]
+INTVAL        [0-9]
+OCTVAL        [0-7]
 
 %%
 
 
 
-"unsigned" {
-  DEBUGF( "UNSIGNED\n" );
-  return UNSIGNED;
-}
-
-"typedef" {
-  DEBUGF( "TYPEDEF\n" );
-  return TYPEDEF;
-}
-
-"struct" {
-  DEBUGF( "STRUCT\n" );
-  return STRUCT;
-}
-
-"union" {
-  DEBUGF( "UNION\n" );
-  return UNION;
-}
-
-"const" {
-  DEBUGF( "CONST\n" );
-  return CONST;
-}
-
 "static" {
-  DEBUGF( "STATIC\n" );
+  DEBUGF("STATIC\n");
   return STATIC;
 }
-
-"extern" {
-  DEBUGF( "EXTERN\n" );
-  return EXTERN;
+"unsigned" {
+  DEBUGF("UNSIGNED\n");
+  return UNSIGNED;
 }
-
-"auto" {
-  DEBUGF( "AUTO\n" );
-  return AUTO;
+"typedef" {
+  DEBUGF("TYPEDEF\n");
+  return TYPEDEF;
 }
-
 "register" {
-  DEBUGF( "REGISTER\n" );
+  DEBUGF("REGISTER\n");
   return REGISTER;
 }
-
+"struct" {
+  DEBUGF("STRUCT\n");
+  return STRUCT;
+}
+"union" {
+  DEBUGF("UNION\n");
+  return UNION;
+}
 "sizeof" {
-  DEBUGF( "SIZEOF\n" );
+  DEBUGF("SIZEOF\n");
   return SIZEOF;
 }
-
-
+"const" {
+  DEBUGF("CONST\n");
+  return CONST;
+}
+"extern" {
+  DEBUGF("EXTERN\n");
+  return EXTERN;
+}
+"auto" {
+  DEBUGF("AUTO\n");
+  return AUTO;
+}
 
 
 
 "return" {
-  DEBUGF( "RETURN\n" );
+  DEBUGF("RETURN\n");
   return RETURN;
 }
 "default" {
-  DEBUGF( "DEFAULT\n" );
+  DEBUGF("DEFAULT\n");
   return DEFAULT;
 }
 "while" {
-  DEBUGF( "WHILE\n" );
+  DEBUGF("WHILE\n");
   return WHILE;
 }
 "do" {
-  DEBUGF( "DO\n" );
+  DEBUGF("DO\n");
   return DO;
 }
 "if" {
-  DEBUGF( "IF\n" );
+  DEBUGF("IF\n");
   return IF;
 }
 "else" {
-  DEBUGF( "ELSE\n" );
+  DEBUGF("ELSE\n");
   return ELSE;
 }
 "for" {
-  DEBUGF( "FOR\n" );
+  DEBUGF("FOR\n");
   return FOR;
 }
 "switch" {
-  DEBUGF( "SWITCH\n" );
+  DEBUGF("SWITCH\n");
   return SWITCH;
 }
 "case" {
-  DEBUGF( "CASE\n" );
+  DEBUGF("CASE\n");
   return CASE;
 }
 "continue" {
-  DEBUGF( "CONTINUE\n" );
+  DEBUGF("CONTINUE\n");
   return CONTINUE;
 }
 "break" {
-  DEBUGF( "BREAK\n" );
+  DEBUGF("BREAK\n");
   return BREAK;
 }
 "goto" {
-  DEBUGF( "GOTO\n" );
+  DEBUGF("GOTO\n");
   return GOTO;
 }
 
 
 "(" {
-  DEBUGF( "(\n" );
+  DEBUGF("(\n");
   return '(';
 }
 ")" {
-  DEBUGF( ")\n" );
+  DEBUGF(")\n");
   return ')';
 }
 "[" {
-  DEBUGF( "[\n" );
+  DEBUGF("[\n");
   return '[';
 }
 "]" {
-  DEBUGF( "]\n" );
+  DEBUGF("]\n");
   return ']';
 }
 "{" {
-  DEBUGF( "{\n" );
+  DEBUGF("{\n");
   return '{';
 }
 "}" {
-  DEBUGF( "}\n" );
+  DEBUGF("}\n");
   return '}';
 }
 "," {
-  DEBUGF( ",\n" );
+  DEBUGF(",\n");
   return ',';
 }
 ";" {
-  DEBUGF( ";\n" );
+  DEBUGF(";\n");
   return ';';
 }
 
 
 "==" {
-  DEBUGF( "EQ\n" );
+  DEBUGF("EQ\n");
   return EQ;
 }
 "!=" {
-  DEBUGF( "NE\n" );
+  DEBUGF("NE\n");
   return NE;
 }
 ">=" {
-  DEBUGF( "GE\n" );
+  DEBUGF("GE\n");
   return GE;
 }
 
 "<=" {
-  DEBUGF( "LE\n" );
+  DEBUGF("LE\n");
   return LE;
 }
 
 ">" {
-  DEBUGF( "GT\n" );
+  DEBUGF("GT\n");
   return GT;
 }
 "<" {
-  DEBUGF( "LT\n" );
+  DEBUGF("LT\n");
   return LT;
 }
 "+" {
-  DEBUGF( "ADD\n" );
+  DEBUGF("ADD\n");
   return ADD;
 }
 "-" {
-  DEBUGF( "SUB\n" );
+  DEBUGF("SUB\n");
   return SUB;
 }
 "*" {
-  DEBUGF( "MUL\n" );
+  DEBUGF("MUL\n");
   return MUL;
 }
 "/" {
-  DEBUGF( "DIV\n" );
+  DEBUGF("DIV\n");
   return DIV;
 }
 "%" {
-  DEBUGF( "MOD\n" );
+  DEBUGF("MOD\n");
   return MOD;
 }
 "||" {
-  DEBUGF( "OR\n" );
+  DEBUGF("OR\n");
   return OR;
 }
 "&&" {
-  DEBUGF( "ADD\n" );
+  DEBUGF("ADD\n");
   return ADD;
 }
 "|" {
-  DEBUGF( "BITOR\n" );
+  DEBUGF("BITOR\n");
   return BITOR;
 }
 "&" {
-  DEBUGF( "BITAND\n" );
+  DEBUGF("BITAND\n");
   return BITAND;
 }
 "^" {
-  DEBUGF( "BITXOR\n" );
+  DEBUGF("BITXOR\n");
   return BITXOR;
 }
 "!" {
-  DEBUGF( "NOT\n" );
+  DEBUGF("NOT\n");
   return NOT;
 }
 "~" {
-  DEBUGF( "COM\n" );
+  DEBUGF("COM\n");
   return COM;
 }
 "<<" {
-  DEBUGF( "LSH\n" );
+  DEBUGF("LSH\n");
   return LSH;
 }
 ">>" {
-  DEBUGF( "RSH\n" );
+  DEBUGF("RSH\n");
   return RSH;
 }
 "=" {
-  DEBUGF( "SET\n" );
+  DEBUGF("SET\n");
   return SET;
 }
 "+=" {
-  DEBUGF( "SETADD\n" );
+  DEBUGF("SETADD\n");
   return SETADD;
 }
 "-=" {
-  DEBUGF( "SETSUB\n" );
+  DEBUGF("SETSUB\n");
   return SETSUB;
 }
 "*=" {
-  DEBUGF( "SETMUL\n" );
+  DEBUGF("SETMUL\n");
   return SETMUL;
 }
 "/=" {
-  DEBUGF( "SETDIV\n" );
+  DEBUGF("SETDIV\n");
   return SETDIV;
 }
 "%=" {
-  DEBUGF( "SETMOD\n" );
+  DEBUGF("SETMOD\n");
   return SETMOD;
 }
 "|=" {
-  DEBUGF( "SETOR\n" );
+  DEBUGF("SETOR\n");
   return SETOR;
 }
 "&=" {
-  DEBUGF( "SETAND\n" );
+  DEBUGF("SETAND\n");
   return SETAND;
 }
 "^=" {
-  DEBUGF( "SETXOR\n" );
+  DEBUGF("SETXOR\n");
   return SETXOR;
 }
 "<<=" {
-  DEBUGF( "SETLSH\n" );
+  DEBUGF("SETLSH\n");
   return SETLSH;
 }
 ">>=" {
-  DEBUGF( "SETRSH\n" );
+  DEBUGF("SETRSH\n");
   return SETRSH;
 }
 
@@ -310,72 +301,55 @@ OCTVAL      [0-7]
 
 
 "void" {
-  DEBUGF( "VOID\n" );
+  DEBUGF("VOID\n");
   return VOID;
 }
 "char" {
-  DEBUGF( "CHAR\n" );
+  DEBUGF("CHAR\n");
   return CHAR;
 }
 "short" {
-  DEBUGF( "SHORT\n" );
+  DEBUGF("SHORT\n");
   return SHORT;
 }
 "int" {
-  DEBUGF( "INT\n" );
+  DEBUGF("INT\n");
   return INT;
 }
 "long" {
-  DEBUGF( "LONG\n" );
+  DEBUGF("LONG\n");
   return LONG;
 }
 "float" {
-  DEBUGF( "FLOAT\n" );
+  DEBUGF("FLOAT\n");
   return FLOAT;
 }
 "double" {
-  DEBUGF( "DOUBLE\n" );
+  DEBUGF("DOUBLE\n");
   return DOUBLE;
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 "0x"{HEXVAL}+ {
-  DEBUGF( "INTVAL\n" );
+  DEBUGF("INTVAL\n");
   return INTVAL;
 }
 "0"{OCTVAL}*  {
-  DEBUGF( "INTVAL\n" );
+  DEBUGF("INTVAL\n");
   return INTVAL;
 }
 [1-9]{INTVAL}* {
-  DEBUGF( "INTVAL\n" );
+  DEBUGF("INTVAL\n");
   return INTVAL;
 }
-
-
-
-
-
 
 
 
 {ID} {
-  DEBUGF( "ID\n" ); yylval.id = strdup(yytext);
+  DEBUGF("ID\n"); yylval.id = strdup(yytext);
   return ID;
-     }
+}
 
 
 
@@ -390,13 +364,13 @@ OCTVAL      [0-7]
   BEGIN 0;
 }
 <COMMENT>([\n](\r)?)|. {
-  /* ignored */ } 
-
-
-
-{whitesp}+ {
   /* ignored */
-           }
+  }
+
+
+{whitespace}+ {
+  /*   */
+}
 
 
 . {
