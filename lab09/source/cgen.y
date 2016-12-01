@@ -194,8 +194,24 @@ binop   : ID IEQ ID     { }
         | ID IAND ID    { }
         | ID IOR ID     { }
         | ID IXOR ID    { }
-        | ID ISHL ID    { }
-        | ID ISHR ID    { }
+        | ID ISHL ID    { printf( "    movl       " );
+                          function_printtemp(function, $3);
+                          printf( ", %%eax\n" );
+                          printf( "    movl       " );
+                          function_printtemp(function, $1);
+                          printf(", %%ecx\n");
+                          printf( "    sall        %%cl, %%eax\n" ); 
+
+                          }
+        | ID ISHR ID    { printf( "    movl       " );
+                          function_printtemp(function, $3);
+                          printf( ", %%eax\n" );
+                          printf( "    movl       " );
+                          function_printtemp(function, $1);
+                          printf(", %%ecx\n");
+                          printf( "    sarl        %%cl, %%eax\n" );
+
+                          }
         | ID IADD ID    { printf( "    movl       " );
                           function_printtemp(function,$3);
                           printf( ", %%eax\n" );
@@ -203,11 +219,57 @@ binop   : ID IEQ ID     { }
                           printf( "    addl       " );
                           function_printtemp(function,$1);
                           printf( ", " );
-                          printf( "%%eax\n" ); }
-        | ID ISUB ID    { }
-        | ID IMUL ID    { }
-        | ID IDIV ID    { }
-        | ID IMOD ID    { }
+                          printf( "%%eax\n" ); 
+                          }
+        | ID ISUB ID    { printf( "    movl       " );
+                          function_printtemp(function, $3);
+                          printf( ", %%eax\n" );
+                          printf( "    subl       " );
+                          function_printtemp(function, $1);
+                          printf( ", " );
+                          printf( "%%eax\n\n" );
+
+                          }
+
+
+        | ID IMUL ID    { printf( "    movl       " );
+                          function_printtemp(function, $3);
+                          printf( ", %%eax\n" );
+                          printf( "    imul       " );
+                          function_printtemp(function, $1);
+                          printf( ", " );
+                          printf( "%%eax\n\n" );
+
+                          }
+
+
+        | ID IDIV ID    { printf( "    subl       " );
+			                    printf( "%%edx, %%edx\n" );
+			                    printf( "    movl       " );
+                          function_printtemp(function, $3);
+                          printf( ", %%eax\n" );
+			                    printf( "    movl       " );
+                          function_printtemp(function, $1);
+                          printf( ", %%ebx\n" );
+                          printf( "    idiv       " );
+                          printf( "%%ebx\n\n" );
+
+                          }
+
+
+        | ID IMOD ID    { printf( "    movl       $0" );
+        									printf( ", %%edx\n" );
+        									printf( "    movl       " );
+        									function_printtemp(function, $3);
+        									printf( ", %%eax\n" );
+        									printf( "    idiv       " );
+        									function_printtemp(function, $1);
+        									printf( ", %%eax\n\n" );
+        									printf( "    movl       " );
+        									printf( "%%edx, %%eax\n" );
+                          }
+
+
         | ID IIDX ID    { }
         | ID FEQ ID     { }
         | ID FNE ID     { }
