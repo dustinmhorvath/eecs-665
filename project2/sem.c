@@ -3,6 +3,7 @@
 # include "cc.h"
 # include "semutil.h"
 # include "sem.h"
+
 # include "sym.h"
 
 extern int formalnum;
@@ -17,16 +18,14 @@ int numblabels = 0;                     /* toal backpatch labels in file */
 /*
  * backpatch - backpatch list of quadruples starting at p with k
  */
-void backpatch(struct sem_rec *p, int k)
-{
+void backpatch(struct sem_rec *p, int k){
   printf("B%d=L%d\n", p -> s_place, k);
 }
 
 /*
  * bgnstmt - encountered the beginning of a statement
  */
-void bgnstmt()
-{ 
+void bgnstmt(){ 
   extern int lineno;
 
   printf("bgnstmt %d\n", lineno);
@@ -37,16 +36,17 @@ void bgnstmt()
  */
 struct sem_rec *call(char *f, struct sem_rec *args){
 
-  int num = 0;
   struct sem_rec *next;
   next = args;
 
+  int num = 0;
   while (next != NULL){
     next = next -> back.s_true;
     num++;
   }
 
   struct sem_rec *sem_rec_array[num];
+
   next = args;
 
   int i;
@@ -57,33 +57,35 @@ struct sem_rec *call(char *f, struct sem_rec *args){
 
 
   for(i = 0; i < num; i++){
+
     if(sem_rec_array[i] -> s_mode == 0 || sem_rec_array[i] -> s_mode == 1){
       printf("argi t%d\n", sem_rec_array[i] -> s_place);
     }
     else {
       printf("argf t%d\n", sem_rec_array[i] -> s_place);
     }
+
   }
 
   struct id_entry *temp_id;
   if((temp_id = lookup(f, 0)) == NULL){
+
     temp_id = install(f, 0);
-    temp_id -> i_type = T_INT;
     temp_id -> i_type = GLOBAL;
     temp_id -> i_defined = 1;
   }
 
-  char *scope;
+  char* t_scope;
   if(temp_id -> i_scope & GLOBAL){
-    scope = "global";
+    t_scope = "global";
   }
   else if(temp_id -> i_scope & LOCAL){
-    scope = "local";
+    t_scope = "local";
   }
   else if(temp_id -> i_scope & PARAM){
-    scope = "param";
+    t_scope = "param";
   }
-  printf("t%d := %s %s\n", nexttemp(), scope, f);
+  printf("t%d := %s %s\n", nexttemp(), t_scope, f);
   printf("t%d := f%d t%d %d\n", nexttemp(), temp_id -> i_type, currtemp(), num);
   return ((struct sem_rec *) NULL);
 }
@@ -112,8 +114,8 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2){
 /*
  * ccexpr - convert arithmetic expression to logical expression
  */
-struct sem_rec *ccexpr(struct sem_rec *e)
-{
+struct sem_rec *ccexpr(struct sem_rec *e){
+
   struct sem_rec *t1;
 
   if(e){
