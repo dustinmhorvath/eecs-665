@@ -158,10 +158,24 @@ ops     : /* empty rule */        { $$ = NULL; }
 unop    : ISUB ID       { }
         | IINV ID       { }
         | IDEREF ID     { }
-        | IARG ID       { }
-        | ICALL ID INT  { /* printf( "calling " );
-                          function_labeltemp(function,$2);
-                          printf( " with %lld arguments\n", $3); */ }
+        | IARG ID       { 
+                          printf("    pushl       ");
+                          function_printtemp(function, $2);
+                          printf("\n");
+          
+                        }
+        | ICALL ID INT  { /*printf( "calling " );*/
+                          function_labeltemp(function, $2);
+                          printf("\n");
+
+                          int i;
+                          int num = $3;
+                          for(i = 0; i < num; i++){
+                            printf("    pop        %%ebp\n");
+                          }
+                        }
+
+                          /* printf( " with %lld arguments\n", $3);  } */
         | IRET ID       { printf( "    movl       " );
                           function_printtemp(function,$2);
                           printf( ", %%eax\n" ); }
@@ -215,12 +229,14 @@ binop   : ID IEQ ID     { }
         | ID IADD ID    { printf( "    movl       " );
                           function_printtemp(function,$3);
                           printf( ", %%eax\n" );
-
                           printf( "    addl       " );
                           function_printtemp(function,$1);
                           printf( ", " );
                           printf( "%%eax\n" ); 
                           }
+
+
+
         | ID ISUB ID    { printf( "    movl       " );
                           function_printtemp(function, $3);
                           printf( ", %%eax\n" );
@@ -246,10 +262,14 @@ binop   : ID IEQ ID     { }
         | ID IDIV ID    { printf( "    subl       " );
 			                    printf( "%%edx, %%edx\n" );
 			                    printf( "    movl       " );
+
                           function_printtemp(function, $3);
+                          
                           printf( ", %%eax\n" );
 			                    printf( "    movl       " );
+                          
                           function_printtemp(function, $1);
+                          
                           printf( ", %%ebx\n" );
                           printf( "    idiv       " );
                           printf( "%%ebx\n\n" );
@@ -264,7 +284,7 @@ binop   : ID IEQ ID     { }
         									printf( ", %%eax\n" );
         									printf( "    idiv       " );
         									function_printtemp(function, $1);
-        									printf( ", %%eax\n\n" );
+        									printf( ", %%eax\n" );
         									printf( "    movl       " );
         									printf( "%%edx, %%eax\n" );
                           }
