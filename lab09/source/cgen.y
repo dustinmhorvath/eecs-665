@@ -164,7 +164,8 @@ unop    : ISUB ID       { }
                           printf("\n");
           
                         }
-        | ICALL ID INT  { printf( "    call       " );
+        | ICALL ID INT  { 
+                          printf( "    call       " );
                           function_labeltemp(function, $2);
                           printf("\n");
 
@@ -176,9 +177,13 @@ unop    : ISUB ID       { }
                         }
 
                           /* printf( " with %lld arguments\n", $3);  } */
-        | IRET ID       { printf( "    movl       " );
+        | IRET ID       { 
+                          printf( "    movl       " );
                           function_printtemp(function,$2);
-                          printf( ", %%eax\n" ); }
+                          printf( ", %%eax\n" );
+                          
+                        }
+
         | ICONV ID      { }
         | FSUB ID       { }
         | FDEREF ID     { }
