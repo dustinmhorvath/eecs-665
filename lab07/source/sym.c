@@ -33,7 +33,7 @@ struct id_entry *id_table[ITABSIZE] = {0}; /* identifier hash table */
 void dump(int blev, FILE *f)
 {
   //fprintf( f, "You must write the function 'dump' yourself\n" );
-  fprintf(f, "Writing identification table...\n");
+  fprintf(f, "Dumping identifier table...\n");
   int i;
   for(i = 0; i < ITABSIZE; i++){
     if(id_table[i] != NULL){
