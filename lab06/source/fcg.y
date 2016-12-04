@@ -131,83 +131,101 @@ top :	/*    */
 
 function_declaration : function_name '{' function_block '}';
 
-function_name : type ID '(' args ')' {printf("%s;\n", $2); lastFunction = $2;};
+function_name : type ID '(' args ')'
+                {
+                  printf("%s;\n", $2); lastFunction = $2;
+                };
 
-function_block :
-			    | declaration function_block
-    			| statement function_block
-    			;
+function_block  :
+      			    | declaration function_block
+    	      		| statement function_block
+          			;
 
 param : type ID
 			| type MUL ID '[' ']'
 			| type MUL ID '[' expr ']'
 			| type ID '[' expr ']'
-			| type ID'[' ']'
+			| type ID '[' ']'
 			| type MUL ID
 			;
 
-functioncall:	ID '(' listexpr ')' {printf("%s -> %s;\n",lastFunction, $1);};
+functioncall  : ID '(' listexpr ')'
+                {
+                  printf("%s -> %s; \n", lastFunction, $1);
+                };
 
-statement:
-			| ID SET expr ';'
-			| MUL ID SET expr ';'
-			| ID'['INTVAL']' SET expr ';'
-			| RETURN expr ';'
-			| '{' liststatement '}' //missing liststatement
-			| functioncall ';'
-			| IF '(' expr ')' statement ELSE statement
-			| IF '(' expr ')' statement
-			| WHILE '(' expr ')' statement
-			;
+statement :
+    			| ID SET expr ';'
+	    		| MUL ID SET expr ';'
+    			| ID'['INTVAL']' SET expr ';'
+		    	| RETURN expr ';'
+    			| '{' liststatement '}'
+		    	| functioncall ';'
+    			| IF '(' expr ')' statement ELSE statement
+		    	| IF '(' expr ')' statement
+    			| WHILE '(' expr ')' statement
+		    	;
 
-declaration:	type ID ';' | type ID'['INTVAL']' | type MUL ID '['']';
+declaration : type ID ';' 
+            | type ID'['INTVAL']' 
+            | type MUL ID '['']'
+            ;
 
-liststatement:	| statement ',' liststatement | statement;
+liststatement : /*    */
+              | statement ',' liststatement 
+              | statement
+              ;
 
-listexpr:	| expr ',' listexpr	| expr;
+listexpr  :	/*    */
+          | expr ',' listexpr	
+          | expr
+          ;
 
-op  :	BITAND
-    | BITOR
-    | BITXOR
-    | op2
-    ;
+level :	BITAND
+      | BITOR
+      | BITXOR
+      | level2
+      ;
 
-op2 : EQ
-    |NE
-    |op3
-    ;
+level2  : EQ
+        | NE
+        | level3
+        ;
 
-op3 : EQ
-    |NOT EQ
-    |op4
-    ;
+level3  : EQ
+        | NOT EQ
+        | level4
+        ;
 
-op4 : LT
-    | GT
-    | LE
-    | GE
-    | op5
-    ;
+level4  : LT
+        | GT
+        | LE
+        | GE
+        | level5
+        ;
 
-op5 : LSH
-    |RSH
-    |op6
-    ;
+level5  : LSH
+        | RSH
+        | level6
+        ;
 
-op6 :ADD|SUB|op7;
+level6  : ADD
+        | SUB
+        | level7
+        ;
 
-op7 : MUL
-    | DIV
-    | MOD
-    ;
+level7  : MUL
+        | DIV
+        | MOD
+        ;
 
 type  : VOID
-      | CHAR
-      | SHORT
       | INT
-      | LONG
-      | FLOAT
       | DOUBLE
+      | FLOAT
+      | SHORT
+      | LONG
+      | CHAR
       ;
 
 /*********************************************************
@@ -216,12 +234,12 @@ type  : VOID
  * can either be nothing, one parameter, or multiple
  * parameters separated by commas.
  ********************************************************/
-args : /* empty rule */
-     | expr
-     | expr ',' args
-     | param
-	 | param ',' args
-     ;
+args  : /* empty rule */
+      | expr
+      | expr ',' args
+      | param
+	    | param ',' args
+      ;
 
 /*********************************************************
  * An example rule used to parse a single expression.
@@ -229,16 +247,16 @@ args : /* empty rule */
  * but you should modify the rule to parse the required
  * expressions.
  ********************************************************/
-expr : INTVAL
-	 | STRVAL
-	 | CHARVAL
-	 | FLTVAL
-	 | expr op expr
-	 | functioncall
-	 | ID
-	 | MUL ID
-	 | ID '[' INTVAL ']'
-	 ;
+expr  : INTVAL
+      | FLTVAL
+      | STRVAL
+  	  | CHARVAL
+      | expr level expr
+      | functioncall
+      | ID
+   	  | MUL ID
+	    | ID '[' INTVAL ']'
+      ;
 
 %%
 
