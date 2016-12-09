@@ -14,7 +14,7 @@
 
 struct Nfa{
   std::map<char, std::vector<int> > transitions;
-  std::set<int> e_closure(int this_state, std::vector<Nfa> &states){
+  std::set<int> e_closure(int this_state, std::vector<Nfa> &stateList){
     std::stack<int> stack1;
     stack1.push(this_state);
     std::set<int> resultSet;
@@ -22,7 +22,7 @@ struct Nfa{
     while(!stack1.empty()) {
       int t = stack1.top();
       stack1.pop();
-      for(int u : states[t].transitions['E']) {
+      for(int u : stateList[t].transitions['E']) {
         if(resultSet.find(u) == resultSet.end()) {
           resultSet.insert(u);
           stack1.push(u);
@@ -68,7 +68,7 @@ std::set<int> move(Dfa &s, char c, std::vector<Nfa> &NfaStates) {
   return returnValues;
 }
 
-void printNFA(std::vector<Nfa> &s, std::vector<char> &a) {
+void printNfaTable(std::vector<Nfa> &s, std::vector<char> &a) {
   std::cout<<"State";
   for(int i = 0; i < a.size(); ++i) {
     std::cout<<'\t'<<a[i];
@@ -121,7 +121,7 @@ void printOutput(std::vector<Dfa> &s, std::vector<char> &a) {
   }
 }
 
-void printSet(std::set<int> s) {
+void printSetSeries(std::set<int> s) {
   std::cout<<"{";
   bool first = true;
   for( int i : s) {
@@ -134,7 +134,8 @@ void printSet(std::set<int> s) {
   std::cout<<"}";
 }
 
-void printSet(std::vector<int> s) {
+void printSetSeries(std::vector<int> s) {
+
   std::cout<<"{";
   bool first = true;
   for( int i : s) {
@@ -147,38 +148,44 @@ void printSet(std::vector<int> s) {
   std::cout<<"}";
 }
 
-// trim from start
-static std::string &ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))));
-  return s;
+// Trim left side
+static std::string &leftTrim(std::string &a_string) {
+  a_string.erase(a_string.begin(), std::find_if(a_string.begin(), a_string.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+  return a_string;
 }
 
-// trim from end
-static std::string &rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-  return s;
+// Trim right side
+static std::string &rightTrim(std::string &a_string) {
+  a_string.erase(std::find_if(a_string.rbegin(), a_string.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), a_string.end());
+  return a_string;
 }
 
-// trim from both ends
 static std::string &trim(std::string &s) {
-  return ltrim(rtrim(s));
+  return rightTrim(leftTrim(s));
 }
 
-static std::string getSubstring(std::string s, std::string firstCharacter, std::string secondCharacter) {
+int terminals(std::string const &str){
+  std::stringstream stream(str);
+
+  return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
+}
+
+
+static std::string getSubstring(std::string s, std::string first, std::string second) {
+
   std::string t_string = s;
-  std::size_t leftBracketIndex = t_string.find(firstCharacter);
-  std::size_t rightBracketIndex = t_string.find(secondCharacter);
-  t_string = t_string.substr(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
+  std::size_t leftIndex = t_string.find(first);
+  std::size_t rightIndex = t_string.find(second);
+
+  t_string = t_string.substr(leftIndex + 1, rightIndex - leftIndex - 1);
   return trim(t_string);
 }
 
-static std::string getSubstring(std::string s, std::string firstCharacter) {
+static std::string getSubstring(std::string s, std::string first) {
   std::string t_string = s;
-  std::size_t leftBracketIndex = t_string.find(firstCharacter);
-  std::size_t rightBracketIndex = s.length();
-  t_string = t_string.substr(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
+  std::size_t leftIndex = t_string.find(first);
+  std::size_t rightIndex = s.length();
+  t_string = t_string.substr(leftIndex + 1, rightIndex - leftIndex - 1);
   return trim(t_string);
 }
 
@@ -199,13 +206,6 @@ static std::vector<int> splitstr(std::string s, char character) {
   return iv;
 }
 
-int terminals(std::string const &str)
-{
-  std::stringstream stream(str);
-
-  return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
-}
-
 int main(int argc, char* argv[]) {
 
 
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
   std::vector<std::string> fileLines;
   std::vector<char> symbolList;
 
-  std::vector<Nfa> states;
+  std::vector<Nfa> stateList;
   std::vector<Dfa> dStates;
 
   std::vector<int> finalStates;
@@ -259,8 +259,7 @@ int main(int argc, char* argv[]) {
   }
   n_terminals = terminals(t_string) - 1;
 
-  // Resize states
-  states.resize(n_states);
+  stateList.resize(n_states);
 
   for(int i = 4; i <= n_states + 3; ++i) {
 
@@ -281,7 +280,7 @@ int main(int argc, char* argv[]) {
 
       string2 = string1.substr(size1+1, size2 - size1 - 1);
 
-      states[i-4].transitions[symbolList[k]] = splitstr(string2, ',');
+      stateList[i-4].transitions[symbolList[k]] = splitstr(string2, ',');
 
     }
   }   
@@ -289,24 +288,24 @@ int main(int argc, char* argv[]) {
 
   std::cout<<"Initial State: {"<<initial_state<<"}\n";
   std::cout<<"Final States: ";
-  printSet(finalStates);
+  printSetSeries(finalStates);
   std::cout<<"\n";
 
 
   std::cout<<"Total States: "<<n_states<<"\n";
-  printNFA(states,symbolList);
+  printNfaTable(stateList,symbolList);
   std::cout<<"\n";
 
 
   std::cout<<"E-closure(I0) = ";
 
   std::set<int> resultSet;
-  resultSet = states[initial_state - 1].e_closure(initial_state - 1, states);
+  resultSet = stateList[initial_state - 1].e_closure(initial_state - 1, stateList);
   Dfa initial(resultSet, finalStates);
   dStates.push_back(initial);
-  printSet(resultSet);
+  printSetSeries(resultSet);
   for(char c : symbolList) {
-    move(initial, c, states);
+    move(initial, c, stateList);
   }
   std::cout<<" = 1\n\n";
   for(int i = 0; i < dStates.size(); ++i) {
@@ -317,25 +316,25 @@ int main(int argc, char* argv[]) {
       if(c == 'E') {
         continue;
       }
-      resultSet = move(dStates[i], c, states);
+      resultSet = move(dStates[i], c, stateList);
       if(resultSet.size() == 0) {
         continue;
       }
-      printSet(dStates[i].NfaStates);
+      printSetSeries(dStates[i].NfaStates);
       std::cout<<" --"<<c<<"--> ";
-      printSet(resultSet);
+      printSetSeries(resultSet);
 
       std::set<int> closureCoords;
       for(int i : resultSet) {
-        std::set<int> tmp = states[i].e_closure(i, states);
+        std::set<int> tmp = stateList[i].e_closure(i, stateList);
         closureCoords.insert(tmp.begin(), tmp.end());
       }
 
 
       std::cout<<"\nE-closure";
-      printSet(resultSet);
+      printSetSeries(resultSet);
       std::cout << " = ";
-      printSet(closureCoords);
+      printSetSeries(closureCoords);
 
       int flag = -1;
       for(int k = 0; k < dStates.size(); ++k) {
@@ -368,7 +367,7 @@ int main(int argc, char* argv[]) {
   std::cout<<"Initial State: {1}\n";
 
   std::cout<<"Final States: ";
-  printSet(d_finalStates);
+  printSetSeries(d_finalStates);
   std::cout<<"\n";
   printOutput(dStates,symbolList);
 
