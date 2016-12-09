@@ -5,62 +5,75 @@
 #include <sstream>
 #include <iterator>
 #include <vector>
-#include <algorithm> 
 #include <cctype>
 #include <map>
 #include <set>
 #include <locale>
 #include <stack>
 
+#include <algorithm> 
+
+
+// Basic attributes of an nfa state
 struct Nfa{
   std::map<char, std::vector<int> > transitions;
   std::set<int> e_closure(int this_state, std::vector<Nfa> &stateList){
-    std::stack<int> stack1;
-    stack1.push(this_state);
+    // store nfa attributes for state
+    std::stack<int> t_stack;
+    t_stack.push(this_state);
     std::set<int> resultSet;
     resultSet.insert(this_state);
-    while(!stack1.empty()) {
-      int t = stack1.top();
-      stack1.pop();
+    while(!t_stack.empty()) {
+
+      int t = t_stack.top();
+      t_stack.pop();
+
       for(int u : stateList[t].transitions['E']) {
         if(resultSet.find(u) == resultSet.end()) {
           resultSet.insert(u);
-          stack1.push(u);
+          t_stack.push(u);
         }
       }
     }
+
     return resultSet;
   }
 };
 
+// Basic attributes of dfa state
 struct Dfa{   
-  Dfa(std::set<int> NfaStates, std::vector<int> finalStates) {
-    this->NfaStates = NfaStates;
-    this->final = false;
+  Dfa(std::set<int> states, std::vector<int> finalStates) {
+    // store dfa atributes
+    this -> nfa_states = nfa_states;
+    this -> final = false;
     for(int i : finalStates) {
-      for(int j : NfaStates) {
+      for(int j : nfa_states) {
+
         if(i == j) {
-          this->final = true;
+          this -> final = true;
         }
       }
     }
   }
   bool final;
   std::map<char, int> transitions;
-  std::set<int> NfaStates;
+  std::set<int> nfa_states;
 
   bool operator==(const Dfa &other) {
-    return std::equal(this->NfaStates.begin(), this->NfaStates.end(), other.NfaStates.begin());
+    return std::equal(this -> nfa_states.begin(), this -> nfa_states.end(), other.nfa_states.begin());
   }
 };
 
-std::set<int> move(Dfa &s, char c, std::vector<Nfa> &NfaStates) {
+std::set<int> move(Dfa &s, char c, std::vector<Nfa> &nfa_states) {
+
   std::set<int> returnValues;
-  for(int i : s.NfaStates) {
-    Nfa &temp = NfaStates[i];
+  
+  for(int i : s.nfa_states) {
+    Nfa &temp = nfa_states[i];
+
     std::map<char, std::vector<int> >::iterator it = temp.transitions.find(c);
     if(it != temp.transitions.end()) {
-      for(int s : it->second) {
+      for(int s : it -> second) {
         returnValues.insert(s);
       }
     }
@@ -81,7 +94,7 @@ void printNfaTable(std::vector<Nfa> &s, std::vector<char> &a) {
       std::map<char, std::vector<int> >::iterator it = s[i].transitions.find(c);
       if(it != s[i].transitions.end()) {
         bool first = true;
-        for(int i: it->second) {
+        for(int i: it -> second) {
           if(!first) {
             std::cout<<',';
           }
@@ -112,7 +125,7 @@ void printOutput(std::vector<Dfa> &s, std::vector<char> &a) {
 
       std::map<char, int>::iterator it = s[i].transitions.find(c);
       if(it != s[i].transitions.end()) {
-        std::cout<<it->second;
+        std::cout<<it -> second;
       }
       std::cout<<"}"<<'\t';
     }
@@ -190,20 +203,22 @@ static std::string getSubstring(std::string s, std::string first) {
 }
 
 static std::vector<int> splitstr(std::string s, char character) {
-  std::vector<int> iv;
+
+  std::vector<int> t_vector;
   trim(s);
   std::stringstream ss(s);
+
   while(ss.good()) {
     std::string substring = "";
     getline(ss, substring, character);
     trim(substring);
-    if(substring == "") {
-    } else {
+    if(substring == "") {} 
+    else {
       int i = stoi(substring) - 1;
-      iv.push_back(i);
+      t_vector.push_back(i);
     }
   }
-  return iv;
+  return t_vector;
 }
 
 int main(int argc, char* argv[]) {
@@ -301,6 +316,7 @@ int main(int argc, char* argv[]) {
 
   std::set<int> resultSet;
   resultSet = stateList[initial_state - 1].e_closure(initial_state - 1, stateList);
+
   Dfa initial(resultSet, finalStates);
   dStates.push_back(initial);
   printSetSeries(resultSet);
@@ -309,19 +325,26 @@ int main(int argc, char* argv[]) {
   }
   std::cout<<" = 1\n\n";
   for(int i = 0; i < dStates.size(); ++i) {
+
     char c;
     std::cout<<"Mark "<< i+1<<"\n";
 
     for(char c: symbolList) {
+
       if(c == 'E') {
         continue;
       }
+
       resultSet = move(dStates[i], c, stateList);
+
       if(resultSet.size() == 0) {
         continue;
       }
-      printSetSeries(dStates[i].NfaStates);
-      std::cout<<" --"<<c<<"--> ";
+      
+      printSetSeries(dStates[i].nfa_states);
+
+      std::cout<<" --"<<c<<"- -> ";
+
       printSetSeries(resultSet);
 
       std::set<int> closureCoords;
@@ -338,7 +361,7 @@ int main(int argc, char* argv[]) {
 
       int flag = -1;
       for(int k = 0; k < dStates.size(); ++k) {
-        if(std::equal(closureCoords.begin(), closureCoords.end(), dStates[k].NfaStates.begin())) {
+        if(std::equal(closureCoords.begin(), closureCoords.end(), dStates[k].nfa_states.begin())) {
           flag = k;
         }
       }
