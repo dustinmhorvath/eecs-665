@@ -25,9 +25,9 @@
 
 using namespace std;
 
-#define MAXSYMBOLS 26
+#define MAXSYMBOLS 50
 #define MAXSIZE MAXSYMBOLS+1
-#define MAXDFASTATES 30
+#define MAXDFASTATES 100
 
 
 vector<int> epsilonClosureHelper(std::vector<int> states[][MAXSIZE], int row, int epsilonCol){
@@ -44,9 +44,6 @@ vector<int> epsilonClosureHelper(std::vector<int> states[][MAXSIZE], int row, in
   return closure;
 }
 
-// Takes an NFA table, start state, and last column, and returns the epsilon
-// closure of that particular pseudo-state. Uses episolonClosureHelper for
-// recursive calls
 vector<int> epsilonClosure(std::vector<int> states[][MAXSIZE], vector<int> tocheck, int epsilonCol){
   vector<int> closure = tocheck;
   for(int vectorindex = 0; vectorindex < tocheck.size(); vectorindex++){
@@ -63,8 +60,6 @@ vector<int> epsilonClosure(std::vector<int> states[][MAXSIZE], vector<int> toche
   return closure;
 }
 
-// Returns a list of possible output states for a particular input state,
-// given a symbol on which to move.
 vector<int> navigate(std::vector<int> states[][MAXSIZE], vector<int> tocheck, int col){
   vector<int> destinations;
   for(int vectorindex = 0; vectorindex < tocheck.size(); vectorindex++){
@@ -79,8 +74,6 @@ vector<int> navigate(std::vector<int> states[][MAXSIZE], vector<int> tocheck, in
   return destinations;
 }
 
-// Returns true if two vectors are equivalent. Does not check for
-// combinations, so take care to sort first.
 bool compareIntVector(vector<int> a, vector<int> b){
   bool equals = true;
   if(a.size() != b.size()){
@@ -97,7 +90,6 @@ bool compareIntVector(vector<int> a, vector<int> b){
   return equals;
 }
 
-// Returns true if a particular vector is in an array of vectors.
 bool checkVectorArray(std::vector<vector<int>> q, std::vector<int> v){
   for(int i = 0; i < q.size(); i++){
     if(compareIntVector(q.at(i), v)){
@@ -239,7 +231,7 @@ int main( int argc, char *argv[] ){
   // Get epsilon closure of start state
   vector<int> start = {initialstate-1};
   vector<int> Iclose = epsilonClosure(NFAstates, start, lastcolumn);
-  std::cout << "\nE-Closure(I0) = {" << initialstate;
+  std::cout << "\nE-closure(I0) = {" << initialstate;
   for(int i = 1; i < Iclose.size(); i++){
     std::cout << "," << Iclose.at(i)+1;
   }
