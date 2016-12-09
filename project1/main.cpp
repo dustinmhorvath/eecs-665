@@ -11,15 +11,10 @@
 #include <set>
 #include <locale>
 #include <stack>
-using std::map;
-using std::ifstream;
-using std::stringstream;
-using std::string;
-using std::vector;
 
-struct nfa{
+struct Nfa{
   std::map<char, std::vector<int> > transitions;
-  std::set<int> e_closure(int this_state, std::vector<nfa> &states){
+  std::set<int> e_closure(int this_state, std::vector<Nfa> &states){
     std::stack<int> stack1;
     stack1.push(this_state);
     std::set<int> resultSet;
@@ -38,12 +33,12 @@ struct nfa{
   }
 };
 
-struct dfa{   
-  dfa(std::set<int> nfaStates, std::vector<int> final_states) {
-    this->nfaStates = nfaStates;
+struct Dfa{   
+  Dfa(std::set<int> NfaStates, std::vector<int> finalStates) {
+    this->NfaStates = NfaStates;
     this->final = false;
-    for(int i : final_states) {
-      for(int j : nfaStates) {
+    for(int i : finalStates) {
+      for(int j : NfaStates) {
         if(i == j) {
           this->final = true;
         }
@@ -52,18 +47,18 @@ struct dfa{
   }
   bool final;
   std::map<char, int> transitions;
-  std::set<int> nfaStates;
+  std::set<int> NfaStates;
 
-  bool operator==(const dfa &other) {
-    return std::equal(this->nfaStates.begin(), this->nfaStates.end(), other.nfaStates.begin());
+  bool operator==(const Dfa &other) {
+    return std::equal(this->NfaStates.begin(), this->NfaStates.end(), other.NfaStates.begin());
   }
 };
 
-std::set<int> move(dfa &s, char c, std::vector<nfa> &nfaStates) {
+std::set<int> move(Dfa &s, char c, std::vector<Nfa> &NfaStates) {
   std::set<int> returnValues;
-  for(int i : s.nfaStates) {
-    nfa &temp = nfaStates[i];
-    std::map<char, vector<int> >::iterator it = temp.transitions.find(c);
+  for(int i : s.NfaStates) {
+    Nfa &temp = NfaStates[i];
+    std::map<char, std::vector<int> >::iterator it = temp.transitions.find(c);
     if(it != temp.transitions.end()) {
       for(int s : it->second) {
         returnValues.insert(s);
@@ -73,7 +68,7 @@ std::set<int> move(dfa &s, char c, std::vector<nfa> &nfaStates) {
   return returnValues;
 }
 
-void printNFA(vector<nfa> &s, vector<char> &a) {
+void printNFA(std::vector<Nfa> &s, std::vector<char> &a) {
   std::cout<<"State";
   for(int i = 0; i < a.size(); ++i) {
     std::cout<<'\t'<<a[i];
@@ -83,7 +78,7 @@ void printNFA(vector<nfa> &s, vector<char> &a) {
     std::cout<<i+1<<'\t';
     for(char c: a) {
       std::cout<<"{";
-      std::map<char, vector<int> >::iterator it = s[i].transitions.find(c);
+      std::map<char, std::vector<int> >::iterator it = s[i].transitions.find(c);
       if(it != s[i].transitions.end()) {
         bool first = true;
         for(int i: it->second) {
@@ -100,7 +95,7 @@ void printNFA(vector<nfa> &s, vector<char> &a) {
   }
 }
 
-void printTable(vector<dfa> &s, vector<char> &a) {
+void printOutput(std::vector<Dfa> &s, std::vector<char> &a) {
   std::cout<<"State";
   for(int i = 0; i < a.size() - 1; ++i) {
     std::cout<<'\t'<<a[i];
@@ -171,16 +166,16 @@ static std::string &trim(std::string &s) {
   return ltrim(rtrim(s));
 }
 
-static std::string gensubstr(std::string s, std::string firstCharacter, std::string secondCharacter) {
-  string t_string = s;
+static std::string getSubstring(std::string s, std::string firstCharacter, std::string secondCharacter) {
+  std::string t_string = s;
   std::size_t leftBracketIndex = t_string.find(firstCharacter);
   std::size_t rightBracketIndex = t_string.find(secondCharacter);
   t_string = t_string.substr(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
   return trim(t_string);
 }
 
-static std::string gensubstr(std::string s, std::string firstCharacter) {
-  string t_string = s;
+static std::string getSubstring(std::string s, std::string firstCharacter) {
+  std::string t_string = s;
   std::size_t leftBracketIndex = t_string.find(firstCharacter);
   std::size_t rightBracketIndex = s.length();
   t_string = t_string.substr(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
@@ -190,9 +185,9 @@ static std::string gensubstr(std::string s, std::string firstCharacter) {
 static std::vector<int> splitstr(std::string s, char character) {
   std::vector<int> iv;
   trim(s);
-  stringstream ss(s);
+  std::stringstream ss(s);
   while(ss.good()) {
-    string substring = "";
+    std::string substring = "";
     getline(ss, substring, character);
     trim(substring);
     if(substring == "") {
@@ -214,21 +209,22 @@ int terminals(std::string const &str)
 int main(int argc, char* argv[]) {
 
 
-  std::cout << "Please provide an input file via stdin.\nExample: \"./nfa2dfa < input.txt\"\n\n";
+  std::cout << "Please provide an input file via stdin.\nExample: \"./Nfa2Dfa < input.txt\"\n\n";
 
   std::ifstream infile(argv[1]);
 
 
-  string line;
-  vector<string> npFile;
-  vector<string> pFile;
-  vector<char> symbols;
-  vector<nfa> states;
-  vector<dfa> dStates;
-  vector<int> final_states;
-  vector<int> d_final_states;
-  int number_of_terminals = 0;
-  int number_of_states = 0;
+  std::string line;
+  std::vector<std::string> fileLines;
+  std::vector<char> symbolList;
+
+  std::vector<Nfa> states;
+  std::vector<Dfa> dStates;
+
+  std::vector<int> finalStates;
+  std::vector<int> d_finalStates;
+  int n_terminals = 0;
+  int n_states = 0;
   int initial_state = 0;
 
 
@@ -236,52 +232,56 @@ int main(int argc, char* argv[]) {
 
 
   while(std::getline(std::cin, line)) {
-    npFile.push_back(line);
+    fileLines.push_back(line);
   }
 
 
   // Read in the initial state
-  string t_string = gensubstr(npFile[0], "{", "}");
+  std::string t_string = getSubstring(fileLines[0], "{", "}");
   initial_state = stoi(t_string);
 
   // Read in the final state
-  t_string = gensubstr(npFile[1], "{", "}");
+  t_string = getSubstring(fileLines[1], "{", "}");
 
   // Read in number of final states
-  final_states = splitstr(t_string, ',');
+  finalStates = splitstr(t_string, ',');
 
   //Get number of States
-  number_of_states = stoi(gensubstr(npFile[2], ":"));
+  n_states = stoi(getSubstring(fileLines[2], ":"));
 
   //Get number of terminals
-  t_string = npFile[3];
+  t_string = fileLines[3];
   t_string = t_string.substr(5, t_string.length());
   for(char c : t_string) {
     if(c != ' ' && c != '\t') {
-      symbols.push_back(c);
+      symbolList.push_back(c);
     }
   }
-  number_of_terminals = terminals(t_string) - 1;
+  n_terminals = terminals(t_string) - 1;
 
   // Resize states
-  states.resize(number_of_states);
+  states.resize(n_states);
 
-  for(int i = 4; i <= number_of_states + 3; ++i) {
-    std::string first = npFile[i];
+  for(int i = 4; i <= n_states + 3; ++i) {
+
+    std::string first = fileLines[i];
     std::string string1;
     std::string string2;
     std::stringstream ss(first);
+
+
     ss >> string1;
     size_t size1;
     size_t size2;
-    for(int k = 0; k <= number_of_terminals; ++k){
+    for(int k = 0; k <= n_terminals; ++k){
 
       ss >> string1;
       size1 = string1.find("{");
       size2 = string1.find("}");
 
       string2 = string1.substr(size1+1, size2 - size1 - 1);
-      states[i-4].transitions[symbols[k]] = splitstr(string2, ',');
+
+      states[i-4].transitions[symbolList[k]] = splitstr(string2, ',');
 
     }
   }   
@@ -289,12 +289,12 @@ int main(int argc, char* argv[]) {
 
   std::cout<<"Initial State: {"<<initial_state<<"}\n";
   std::cout<<"Final States: ";
-  printSet(final_states);
+  printSet(finalStates);
   std::cout<<"\n";
 
 
-  std::cout<<"Total States: "<<number_of_states<<"\n";
-  printNFA(states,symbols);
+  std::cout<<"Total States: "<<n_states<<"\n";
+  printNFA(states,symbolList);
   std::cout<<"\n";
 
 
@@ -302,10 +302,10 @@ int main(int argc, char* argv[]) {
 
   std::set<int> resultSet;
   resultSet = states[initial_state - 1].e_closure(initial_state - 1, states);
-  dfa initial(resultSet, final_states);
+  Dfa initial(resultSet, finalStates);
   dStates.push_back(initial);
   printSet(resultSet);
-  for(char c : symbols) {
+  for(char c : symbolList) {
     move(initial, c, states);
   }
   std::cout<<" = 1\n\n";
@@ -313,7 +313,7 @@ int main(int argc, char* argv[]) {
     char c;
     std::cout<<"Mark "<< i+1<<"\n";
 
-    for(char c: symbols) {
+    for(char c: symbolList) {
       if(c == 'E') {
         continue;
       }
@@ -321,30 +321,31 @@ int main(int argc, char* argv[]) {
       if(resultSet.size() == 0) {
         continue;
       }
-      printSet(dStates[i].nfaStates);
+      printSet(dStates[i].NfaStates);
       std::cout<<" --"<<c<<"--> ";
       printSet(resultSet);
 
-      std::set<int> ec;
+      std::set<int> closureCoords;
       for(int i : resultSet) {
         std::set<int> tmp = states[i].e_closure(i, states);
-        ec.insert(tmp.begin(), tmp.end());
+        closureCoords.insert(tmp.begin(), tmp.end());
       }
+
+
       std::cout<<"\nE-closure";
       printSet(resultSet);
       std::cout << " = ";
-      printSet(ec);
+      printSet(closureCoords);
 
       int flag = -1;
       for(int k = 0; k < dStates.size(); ++k) {
-        //if(resultSet == dStates[k].nfaStates) {
-        if(std::equal(ec.begin(), ec.end(), dStates[k].nfaStates.begin())) {
+        if(std::equal(closureCoords.begin(), closureCoords.end(), dStates[k].NfaStates.begin())) {
           flag = k;
         }
       }
       if(flag == -1) {
-        //new state man
-        dfa newState(ec, final_states);
+
+        Dfa newState(closureCoords, finalStates);
         dStates.push_back(newState);
         dStates[i].transitions[c] = dStates.size();
         std::cout<<" = "<< dStates.size();
@@ -356,20 +357,21 @@ int main(int argc, char* argv[]) {
         dStates[i].transitions[c] = flag + 1;
         std::cout<<"\n";
       }
-      }
-      std::cout<<"\n";
     }
-    for(int i = 0; i < dStates.size(); ++i) {
-      if(dStates[i].final == true) {
-        d_final_states.push_back(i);
-      }
-    }
-    std::cout<<"Initial State: {1}\n";
-    std::cout<<"Final States: ";
-    printSet(d_final_states);
     std::cout<<"\n";
-    printTable(dStates,symbols);
-
-
-    return 0;
   }
+  for(int i = 0; i < dStates.size(); ++i) {
+    if(dStates[i].final == true) {
+      d_finalStates.push_back(i);
+    }
+  }
+  std::cout<<"Initial State: {1}\n";
+
+  std::cout<<"Final States: ";
+  printSet(d_finalStates);
+  std::cout<<"\n";
+  printOutput(dStates,symbolList);
+
+
+  return 0;
+}
